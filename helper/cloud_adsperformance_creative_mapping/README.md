@@ -37,7 +37,8 @@ A função busca todos os registros da tabela Supabase e sincroniza para BigQuer
 1. **SECRET_GOOGLE_SERVICE_ACCOUNT** - Credenciais do BigQuery (já configurado)
 2. **SUPABASE_URL** - URL do projeto Supabase
 3. **SUPABASE_KEY** - Chave de API do Supabase
-4. **SUPABASE_TABLE** - Nome da tabela no Supabase (padrão: `creative_mapping`)
+
+**Nota:** O nome da tabela (`adsperfomance_creative_mapping`) está fixo no código.
 
 ### Como Adicionar Secrets:
 
@@ -61,7 +62,6 @@ A função busca todos os registros da tabela Supabase e sincroniza para BigQuer
 cd helper/cloud_adsperformance_creative_mapping
 export SUPABASE_URL="sua_url"
 export SUPABASE_KEY="sua_chave"
-export SUPABASE_TABLE="creative_mapping"
 python main.py
 ```
 
@@ -86,10 +86,10 @@ schema = [
 
 ### Ajustar Nome da Tabela Supabase:
 
-Configure via secret `SUPABASE_TABLE` ou edite diretamente em `main.py`:
+Edite diretamente em `main.py`:
 
 ```python
-SUPABASE_TABLE = "nome_da_sua_tabela"
+SUPABASE_TABLE = "nome_da_sua_tabela"  # Linha 44
 ```
 
 ---

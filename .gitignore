@@ -46,5 +46,10 @@ logs/
 *.json
 !requirements*.txt
 
+# Local development files with credentials
+activeview/local_*.py
+facebook/local_*.py
+**/local_*.py
+
 # Cloud Function specific
 .gcloudignore

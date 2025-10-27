@@ -41,7 +41,7 @@ logger = logging.getLogger(__name__)
 # Configurações Supabase (via environment variables)
 SUPABASE_URL = os.getenv("SUPABASE_URL", "")
 SUPABASE_KEY = os.getenv("SUPABASE_KEY", "")
-SUPABASE_TABLE = os.getenv("SUPABASE_TABLE", "creative_mapping")
+SUPABASE_TABLE = "adsperfomance_creative_mapping"  # Nome fixo da tabela no Supabase
 
 # Configurações BigQuery
 BIGQUERY_PROJECT = "data-v1-423414"

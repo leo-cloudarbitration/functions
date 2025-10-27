@@ -80,7 +80,8 @@ google_ads/
 ### Para Creative Mapping (Supabase):
 - `SUPABASE_URL`: URL do projeto Supabase (ex: `https://xxxxx.supabase.co`)
 - `SUPABASE_KEY`: Chave de API do Supabase (service_role ou anon key)
-- `SUPABASE_TABLE`: Nome da tabela no Supabase (padrão: `creative_mapping`)
+
+**Nota:** O nome da tabela Supabase (`adsperfomance_creative_mapping`) está fixo no código.
 
 ## 📊 Monitoramento
 
