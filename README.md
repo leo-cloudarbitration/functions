@@ -13,8 +13,8 @@ Repositório organizado para funções de coleta e processamento de dados de mar
 ├── google_ads/                          # Funções relacionadas ao Google Ads
 ├── analytics/                           # Funções de analytics e relatórios
 ├── utils/                               # Utilitários compartilhados
-├── workers/                             # 🚀 Workers/Workflows
-│   ├── cloud_facebook_adsperformance.yml    # GitHub Actions workflow
+├── .github/workflows/                   # 🚀 GitHub Actions Workflows
+│   ├── cloud_facebook_adsperformance.yml    # Workflow principal
 │   ├── debug_bigquery.yml                   # Workflow de debug
 │   └── test_connection.yml                  # Workflow de teste
 └── README.md                            # Documentação
@@ -32,7 +32,7 @@ Repositório organizado para funções de coleta e processamento de dados de mar
 
 1. **Criar pasta** em `[categoria]/[nome_da_funcao]/`
 2. **Adicionar código** da função
-3. **Criar workflow** em `workers/` (ex: `workers/nova_funcao.yml`)
+3. **Criar workflow** em `.github/workflows/` (ex: `nova_funcao.yml`)
 4. **Configurar secrets** necessários
 5. **Testar** com `workflow_dispatch`
 
@@ -44,8 +44,8 @@ google_ads/
     ├── requirements.txt
     └── README.md
 
-# Workflow em workers/:
-workers/cloud_google_ads_performance.yml
+# Workflow em .github/workflows/:
+.github/workflows/cloud_google_ads_performance.yml
 ```
 
 ## 🔐 Secrets Configurados
