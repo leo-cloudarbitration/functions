@@ -127,22 +127,40 @@ def get_supabase_client() -> Client:
 # ------------------------------------------------------------------------------
 def fetch_creative_mapping_from_supabase():
     """
-    Busca dados de mapeamento de criativos do Supabase.
+    Busca dados de mapeamento de criativos do Supabase com paginação.
     """
     try:
         logger.info(f"🔍 Buscando dados da tabela '{SUPABASE_TABLE}' no Supabase...")
         
         supabase = get_supabase_client()
         
-        # Buscar todos os registros da tabela
-        response = supabase.table(SUPABASE_TABLE).select("*").execute()
+        # Buscar todos os registros com paginação
+        all_data = []
+        page_size = 1000  # Tamanho da página
+        offset = 0
         
-        if not response.data:
+        while True:
+            logger.info(f"   Buscando registros {offset} a {offset + page_size}...")
+            response = supabase.table(SUPABASE_TABLE).select("*").range(offset, offset + page_size - 1).execute()
+            
+            if not response.data:
+                break  # Não há mais dados
+            
+            all_data.extend(response.data)
+            logger.info(f"   ✅ {len(response.data)} registros obtidos (total: {len(all_data)})")
+            
+            # Se retornou menos que o tamanho da página, chegamos ao fim
+            if len(response.data) < page_size:
+                break
+            
+            offset += page_size
+        
+        if not all_data:
             logger.warning("⚠️ Nenhum dado encontrado no Supabase")
             return []
         
-        logger.info(f"✅ {len(response.data)} registros obtidos do Supabase")
-        return response.data
+        logger.info(f"✅ Total de {len(all_data)} registros obtidos do Supabase")
+        return all_data
         
     except Exception as e:
         logger.error(f"❌ Erro ao buscar dados do Supabase: {e}")
