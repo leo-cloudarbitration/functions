@@ -1,4 +1,4 @@
-name: GAM Ads Performance Data Collection
+name: cloud_gam_adsperformance
 
 on:
   schedule:
