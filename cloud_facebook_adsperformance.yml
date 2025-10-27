@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: facebook_ads/cloud_facebook_adsperformance
+        working-directory: workers/facebook_ads/cloud_facebook_adsperformance
 
     steps:
       - name: Checkout

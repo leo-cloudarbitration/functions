@@ -34,7 +34,7 @@ TABLE_ID = "data-v1-423414.test.cloud_facebook_adsperformance_historical"
 # CONFIGURAÇÃO DOS GRUPOS
 GROUPS = {
     "casf_a": {
-        "token": "EAASZBzOX0YzUBPYC8f9HyAqsKtEHYPmxaw9LHSnoZAZAGQdhhsFrMlYzZBpCuUMTFVSGv102y1KNU8zTB6SCCHCD8FPbWc9X4XZCC2SSX5rljMZASgXCbd6Od3vwRec4Op5poHpmUoGWZARIbQt7ZBUYPnDeonfMt6EnxlrszboZCz1RjkNTUwI9xuVIHYbs87Ml9ijU4qjMQ",
+        "token": "EAASZBzOX0YzUBP2Io7Qj5KkSTewdSdgZBarOUqV25wW8bY428sXOLN7nftC7t6UvMvuyN30CHODtgaZBP67Nni3uIaXySsZAfAl25t5bfZBXMRVsG2ZC4SLLZADZC04IsAmrWiW1BrV0kEw281oAZAOYeu5A2f9dS8kRRZAnTpgumZCJnbJZAWMGoPZCZBVZBh6Pe8zyZAyoMgZDZD",
         "accounts": [
             "act_2086793801756487",  # A 001
             "act_981724707176063",   # A 002
@@ -61,7 +61,7 @@ GROUPS = {
     }, 
 
     "casf_b": {
-        "token": "EAASZBzOX0YzUBPZAXfpZBXtYACx0WIAYnxo0zEUYWnygpDGKI8XkPwcNjLZBcZATCm6DHcKADc8oKkZACsIpKRuQXWCjw6WAN5kDdKACjM0QchkYdHPQBSLfOepuwNW4pQOFGptrVZAY7dLIUuiBFdf0dG6hp5ZAL4UzmyJZASEjsTNZBq2tItZAwH7ngaYFTAJOzuZACbf7n1gZC",
+        "token": "EAASZBzOX0YzUBP8tkZCg0WGE5dobFuhAMzMFlKllEwNgn741p2tS1rb5u7tPhrQciZBhg8h4La7pXIajhMpZCBcVuO6iFhZAoFHSQvJyx5VYw9AfbWFRkYo2n8QmZBZBo9zD4nzGD7qUkWNF3aw1ZCwwoykPH9IyUUQ6hfS2A5wYqwzmst7Giicc2iJijl7pWsEzxIGef0oX",
         "accounts": [
             "act_1346308366549889",  # B 001
             "act_1370098907466943",  # B 003
@@ -107,7 +107,7 @@ GROUPS = {
     },      
 
     "casf_c": {
-        "token": "EAASZBzOX0YzUBPRWInZAaZAZAOrSa7A8fYzDIeP6eZCieGMNoeoyhXdV7dF5R0W8YHNcYxEcXZCO3WiOf1kTMImk43JUZA8yCCxSkJPvMtouK2d8YdXYhpZALpoAxgHBfuulFrIDCaG5l11FgZBdUjhBzZCiXVsrI1PYeJaB94BVk9uX1iKpbcZAJAK0b2SHgXoxX2qmAgTNBft",
+        "token": "EAASZBzOX0YzUBPyLQMKvclgQoFkkybpz5dDzSEdbYhpIaYY1YkXSWtqDZBZCZCa8ZAWWDpzASvDRqwQvpit8ZBSK3CzGHALHaoh4mD1xft5TH3LqFNkjZBOViZCZCZBUEDKu4JDo7mIJ0ZCGpFSRcR1SKvW9KG7e9V9AfhvMtRFZCu1FzZBj761K82xXaw9wZA7clhzJIOsJgJ8wL1",
         "accounts": [
             "act_1032538255591656",  # C 006
             "act_4151573991833128",  # CASF C - 018

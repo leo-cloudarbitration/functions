@@ -5,14 +5,15 @@ Repositório organizado para funções de coleta e processamento de dados de mar
 ## 📁 Estrutura do Projeto
 
 ```
-├── facebook_ads/                       # Funções relacionadas ao Facebook Ads
-│   └── cloud_facebook_adsperformance/
-│       ├── main.py                      # Script principal de coleta
-│       ├── requirements.txt            # Dependências Python
-│       └── README.md                    # Documentação específica
-├── google_ads/                          # Funções relacionadas ao Google Ads
-├── analytics/                           # Funções de analytics e relatórios
-├── utils/                               # Utilitários compartilhados
+├── workers/                             # 🚀 Workers/Processadores de dados
+│   ├── facebook_ads/                    # Funções relacionadas ao Facebook Ads
+│   │   └── cloud_facebook_adsperformance/
+│   │       ├── main.py                  # Script principal de coleta
+│   │       ├── requirements.txt        # Dependências Python
+│   │       └── README.md                # Documentação específica
+│   ├── google_ads/                      # Funções relacionadas ao Google Ads
+│   ├── analytics/                       # Funções de analytics e relatórios
+│   └── utils/                           # Utilitários compartilhados
 ├── cloud_facebook_adsperformance.yml    # GitHub Actions workflow
 ├── debug_bigquery.yml                   # Workflow de debug
 └── test_connection.yml                  # Workflow de teste
@@ -24,11 +25,11 @@ Repositório organizado para funções de coleta e processamento de dados de mar
 - **Agendamento:** Diário às 06:00 BRT
 - **Função:** Coleta dados de performance de anúncios do Facebook
 - **Destino:** BigQuery (`data-v1-423414.test.cloud_facebook_adsperformance_historical`)
-- **Localização:** `facebook_ads/cloud_facebook_adsperformance/`
+- **Localização:** `workers/facebook_ads/cloud_facebook_adsperformance/`
 
 ## 🛠️ Como Adicionar Novas Funções
 
-1. **Criar pasta** em `[categoria]/[nome_da_funcao]/`
+1. **Criar pasta** em `workers/[categoria]/[nome_da_funcao]/`
 2. **Adicionar código** da função
 3. **Criar workflow** na raiz (ex: `nova_funcao.yml`)
 4. **Configurar secrets** necessários
@@ -36,11 +37,12 @@ Repositório organizado para funções de coleta e processamento de dados de mar
 
 ### Exemplo de Nova Função:
 ```
-google_ads/
-└── cloud_google_ads_performance/
-    ├── main.py
-    ├── requirements.txt
-    └── README.md
+workers/
+└── google_ads/
+    └── cloud_google_ads_performance/
+        ├── main.py
+        ├── requirements.txt
+        └── README.md
 
 # Workflow na raiz:
 cloud_google_ads_performance.yml
