@@ -87,14 +87,22 @@ def get_supabase_client() -> Client:
         raise ImportError("Biblioteca supabase não está instalada")
     
     if not SUPABASE_URL or not SUPABASE_KEY:
+        logger.error("❌ SUPABASE_URL ou SUPABASE_KEY não configurados")
+        logger.error(f"   SUPABASE_URL presente: {bool(SUPABASE_URL)}")
+        logger.error(f"   SUPABASE_KEY presente: {bool(SUPABASE_KEY)}")
         raise ValueError("SUPABASE_URL e SUPABASE_KEY devem estar configurados")
     
     try:
+        logger.info(f"🔍 [DEBUG] Tentando conectar ao Supabase...")
+        logger.info(f"🔍 [DEBUG] URL: {SUPABASE_URL[:30]}... (truncado)")
+        logger.info(f"🔍 [DEBUG] Key: {SUPABASE_KEY[:20]}... (truncado)")
+        
         supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
         logger.info("✅ Supabase client configurado com sucesso!")
         return supabase
     except Exception as e:
         logger.error(f"❌ Erro ao configurar Supabase client: {e}")
+        logger.error(f"❌ Tipo do erro: {type(e).__name__}")
         raise
 
 # ------------------------------------------------------------------------------
