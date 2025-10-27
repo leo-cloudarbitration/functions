@@ -5,17 +5,16 @@ Repositório organizado para funções de coleta e processamento de dados de mar
 ## 📁 Estrutura do Projeto
 
 ```
-functions/
-├── facebook_ads/                    # Funções relacionadas ao Facebook Ads
+├── facebook_ads/                       # Funções relacionadas ao Facebook Ads
 │   └── cloud_facebook_adsperformance/
-│       ├── main.py                  # Script principal de coleta
-│       ├── requirements.txt         # Dependências Python
-│       └── README.md                # Documentação específica
-├── google_ads/                      # Funções relacionadas ao Google Ads
-├── analytics/                       # Funções de analytics e relatórios
-└── utils/                           # Utilitários compartilhados
+│       ├── main.py                      # Script principal de coleta
+│       ├── requirements.txt            # Dependências Python
+│       └── README.md                    # Documentação específica
+├── google_ads/                          # Funções relacionadas ao Google Ads
+├── analytics/                           # Funções de analytics e relatórios
+└── utils/                               # Utilitários compartilhados
 
-.github/workflows/                   # GitHub Actions
+.github/workflows/                       # GitHub Actions
 └── cloud_facebook_adsperformance.yml
 ```
 
@@ -25,11 +24,11 @@ functions/
 - **Agendamento:** Diário às 06:00 BRT
 - **Função:** Coleta dados de performance de anúncios do Facebook
 - **Destino:** BigQuery (`data-v1-423414.test.cloud_facebook_adsperformance_historical`)
-- **Localização:** `functions/facebook_ads/cloud_facebook_adsperformance/`
+- **Localização:** `facebook_ads/cloud_facebook_adsperformance/`
 
 ## 🛠️ Como Adicionar Novas Funções
 
-1. **Criar pasta** em `functions/[categoria]/[nome_da_funcao]/`
+1. **Criar pasta** em `[categoria]/[nome_da_funcao]/`
 2. **Adicionar código** da função
 3. **Criar workflow** em `.github/workflows/`
 4. **Configurar secrets** necessários
@@ -37,12 +36,11 @@ functions/
 
 ### Exemplo de Nova Função:
 ```
-functions/
-└── google_ads/
-    └── cloud_google_ads_performance/
-        ├── main.py
-        ├── requirements.txt
-        └── README.md
+google_ads/
+└── cloud_google_ads_performance/
+    ├── main.py
+    ├── requirements.txt
+    └── README.md
 ```
 
 ## 🔐 Secrets Configurados
