@@ -10,11 +10,17 @@ Repositório organizado para funções de coleta e processamento de dados de mar
 │       ├── main.py                      # Script principal de coleta
 │       ├── requirements.txt            # Dependências Python
 │       └── README.md                    # Documentação específica
+├── gam/                                # Funções relacionadas ao GAM (Google Ad Manager)
+│   └── cloud_gam_adsperformance/
+│       ├── main.py                      # Script principal de coleta GAM
+│       ├── requirements.txt            # Dependências Python
+│       └── README.md                    # Documentação específica
 ├── google_ads/                          # Funções relacionadas ao Google Ads
 ├── analytics/                           # Funções de analytics e relatórios
 ├── utils/                               # Utilitários compartilhados
 ├── .github/workflows/                   # 🚀 GitHub Actions Workflows
-│   ├── cloud_facebook_adsperformance.yml    # Workflow principal
+│   ├── cloud_facebook_adsperformance.yml    # Workflow Facebook Ads
+│   ├── cloud_gam_adsperformance.yml         # Workflow GAM Ads
 │   ├── debug_bigquery.yml                   # Workflow de debug
 │   └── test_connection.yml                  # Workflow de teste
 └── README.md                            # Documentação
@@ -27,6 +33,12 @@ Repositório organizado para funções de coleta e processamento de dados de mar
 - **Função:** Coleta dados de performance de anúncios do Facebook
 - **Destino:** BigQuery (`data-v1-423414.test.cloud_facebook_adsperformance_historical`)
 - **Localização:** `facebook_ads/cloud_facebook_adsperformance/`
+
+### GAM Ads Performance
+- **Agendamento:** Diário às 06:30 BRT
+- **Função:** Coleta dados de performance do Google Ad Manager com utm_content
+- **Destino:** BigQuery (`data-v1-423414.test.cloud_gam_adsperformance_historical`)
+- **Localização:** `gam/cloud_gam_adsperformance/`
 
 ## 🛠️ Como Adicionar Novas Funções
 
