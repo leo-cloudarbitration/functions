@@ -15,14 +15,20 @@ Repositório organizado para funções de coleta e processamento de dados de mar
 │       ├── main.py                      # Script principal de coleta GAM
 │       ├── requirements.txt            # Dependências Python
 │       └── README.md                    # Documentação específica
+├── helper/                              # Funções auxiliares e sincronização
+│   └── cloud_adsperformance_creative_mapping/
+│       ├── main.py                      # Sync Supabase → BigQuery
+│       ├── requirements.txt            # Dependências Python
+│       └── README.md                    # Documentação específica
 ├── google_ads/                          # Funções relacionadas ao Google Ads
 ├── analytics/                           # Funções de analytics e relatórios
 ├── utils/                               # Utilitários compartilhados
 ├── .github/workflows/                   # 🚀 GitHub Actions Workflows
-│   ├── cloud_facebook_adsperformance.yml    # Workflow Facebook Ads
-│   ├── cloud_gam_adsperformance.yml         # Workflow GAM Ads
-│   ├── debug_bigquery.yml                   # Workflow de debug
-│   └── test_connection.yml                  # Workflow de teste
+│   ├── cloud_facebook_adsperformance.yml           # Workflow Facebook Ads
+│   ├── cloud_gam_adsperformance.yml                # Workflow GAM Ads
+│   ├── cloud_adsperformance_creative_mapping.yml   # Workflow Creative Mapping
+│   ├── debug_bigquery.yml                          # Workflow de debug
+│   └── test_connection.yml                         # Workflow de teste
 └── README.md                            # Documentação
 ```
 
@@ -39,6 +45,12 @@ Repositório organizado para funções de coleta e processamento de dados de mar
 - **Função:** Coleta dados de performance do Google Ad Manager com utm_content
 - **Destino:** BigQuery (`data-v1-423414.test.cloud_gam_adsperformance_historical`)
 - **Localização:** `gam/cloud_gam_adsperformance/`
+
+### Creative Mapping Sync
+- **Agendamento:** Diário às 07:00 BRT
+- **Função:** Sincroniza mapeamento de criativos do Supabase para BigQuery
+- **Destino:** BigQuery (`data-v1-423414.test.cloud_adsperformance_creative_mapping`)
+- **Localização:** `helper/cloud_adsperformance_creative_mapping/`
 
 ## 🛠️ Como Adicionar Novas Funções
 
@@ -62,7 +74,13 @@ google_ads/
 
 ## 🔐 Secrets Configurados
 
-- `SECRET_GOOGLE_SERVICE_ACCOUNT`: Credenciais do Google Cloud
+### Obrigatórios:
+- `SECRET_GOOGLE_SERVICE_ACCOUNT`: Credenciais do Google Cloud Service Account
+
+### Para Creative Mapping (Supabase):
+- `SUPABASE_URL`: URL do projeto Supabase (ex: `https://xxxxx.supabase.co`)
+- `SUPABASE_KEY`: Chave de API do Supabase (service_role ou anon key)
+- `SUPABASE_TABLE`: Nome da tabela no Supabase (padrão: `creative_mapping`)
 
 ## 📊 Monitoramento
 
