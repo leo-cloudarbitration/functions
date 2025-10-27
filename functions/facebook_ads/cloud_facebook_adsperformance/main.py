@@ -4,8 +4,7 @@ Facebook → BigQuery (Cloud Function) - DADOS DE ANÚNCIOS DE ONTEM
 ─────────────────────────────────────────────────────────────────
 Coleta métricas diárias por ad_id:
 🚀 Editado via Cursor - Deploy automático funcionando!
-📁 Estrutura: functions/facebook_ads/cloud_facebook_adsperformance/ ✅
-- date, ad_id, campaign_id, campaign_name, account_id, account_name
+a- date, ad_id, campaign_id, campaign_name, account_id, account_name
 - impressões, cliques, spend, ctr, cpm
 
 Resultado final = métricas por anúncio (ad_id)
