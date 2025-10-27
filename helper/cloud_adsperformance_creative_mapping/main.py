@@ -39,9 +39,26 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 # Configurações Supabase (via environment variables)
-SUPABASE_URL = os.getenv("SUPABASE_URL", "")
-SUPABASE_KEY = os.getenv("SUPABASE_KEY", "")
+SUPABASE_URL = os.getenv("SUPABASE_URL", "").strip()  # Remove espaços em branco
+SUPABASE_KEY = os.getenv("SUPABASE_KEY", "").strip()  # Remove espaços em branco
 SUPABASE_TABLE = "adsperfomance_creative_mapping"  # Nome fixo da tabela no Supabase
+
+# Log de debug das configurações (sem expor a chave completa)
+if SUPABASE_URL:
+    logger.info(f"🔍 [CONFIG] SUPABASE_URL configurada: {SUPABASE_URL[:30]}...")
+else:
+    logger.error("❌ [CONFIG] SUPABASE_URL não configurada!")
+
+if SUPABASE_KEY:
+    logger.info(f"🔍 [CONFIG] SUPABASE_KEY configurada: {SUPABASE_KEY[:20]}... (len={len(SUPABASE_KEY)})")
+    if SUPABASE_KEY.startswith("eyJ"):
+        logger.warning("⚠️ [CONFIG] Detectada 'anon' key - use a 'service_role' key!")
+    elif SUPABASE_KEY.startswith("sb_secret_"):
+        logger.info("✅ [CONFIG] Secret key detectada (formato correto)")
+    else:
+        logger.warning(f"⚠️ [CONFIG] Formato de key desconhecido: {SUPABASE_KEY[:10]}...")
+else:
+    logger.error("❌ [CONFIG] SUPABASE_KEY não configurada!")
 
 # Configurações BigQuery
 BIGQUERY_PROJECT = "data-v1-423414"
