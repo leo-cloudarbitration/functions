@@ -156,16 +156,13 @@ def create_creative_mapping_table(table_id: str):
         return False
     
     try:
-        # Schema básico - ajuste conforme a estrutura da sua tabela Supabase
+        # Schema baseado na estrutura real da tabela Supabase
         schema = [
-            bigquery.SchemaField("id", "STRING"),
+            bigquery.SchemaField("facebook_ad_id", "STRING"),
+            bigquery.SchemaField("video_id", "STRING"),
             bigquery.SchemaField("creative_id", "STRING"),
-            bigquery.SchemaField("creative_name", "STRING"),
-            bigquery.SchemaField("campaign_id", "STRING"),
-            bigquery.SchemaField("campaign_name", "STRING"),
+            bigquery.SchemaField("creative_nome", "STRING"),
             bigquery.SchemaField("ad_account_id", "STRING"),
-            bigquery.SchemaField("platform", "STRING"),
-            bigquery.SchemaField("created_at", "TIMESTAMP"),
             bigquery.SchemaField("updated_at", "TIMESTAMP"),
             bigquery.SchemaField("imported_at", "DATETIME")
         ]
@@ -199,16 +196,13 @@ def upload_to_bigquery(df: pd.DataFrame, table_id: str):
         logger.info("⚠️ DataFrame vazio - nenhum dado para upload")
         return
     
-    # Schema - ajuste conforme necessário
+    # Schema baseado na estrutura real da tabela Supabase
     schema = [
-        bigquery.SchemaField("id", "STRING"),
+        bigquery.SchemaField("facebook_ad_id", "STRING"),
+        bigquery.SchemaField("video_id", "STRING"),
         bigquery.SchemaField("creative_id", "STRING"),
-        bigquery.SchemaField("creative_name", "STRING"),
-        bigquery.SchemaField("campaign_id", "STRING"),
-        bigquery.SchemaField("campaign_name", "STRING"),
+        bigquery.SchemaField("creative_nome", "STRING"),
         bigquery.SchemaField("ad_account_id", "STRING"),
-        bigquery.SchemaField("platform", "STRING"),
-        bigquery.SchemaField("created_at", "TIMESTAMP"),
         bigquery.SchemaField("updated_at", "TIMESTAMP"),
         bigquery.SchemaField("imported_at", "DATETIME")
     ]
