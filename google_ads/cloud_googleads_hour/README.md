@@ -6,12 +6,13 @@ Este projeto coleta dados horários de campanhas do Google Ads e os envia para o
 
 ### 1. Secrets do GitHub
 
-Configure os seguintes secrets no seu repositório GitHub:
+Configure os seguintes secrets no seu repositório GitHub (`Settings → Secrets and variables → Actions → New repository secret`):
 
-- `SECRET_GOOGLE_SERVICE_ACCOUNT`: JSON completo das credenciais do Google Cloud Service Account
-- `SECRET_GOOGLE_ADS_CONFIG`: JSON com as configurações do Google Ads (formato abaixo)
+#### **SECRET_GOOGLE_SERVICE_ACCOUNT**
+JSON completo das credenciais do Google Cloud Service Account
 
-#### Formato do SECRET_GOOGLE_ADS_CONFIG:
+#### **SECRET_GOOGLE_ADS_CONFIG**
+JSON com as configurações do Google Ads API:
 ```json
 {
   "developer_token": "SEU_DEVELOPER_TOKEN",
@@ -82,19 +83,18 @@ Todos os logs são exibidos no GitHub Actions, incluindo:
 Para executar localmente, configure as variáveis de ambiente:
 
 ```bash
+# Credenciais do Google Cloud
 export SECRET_GOOGLE_SERVICE_ACCOUNT='{"type":"service_account",...}'
-export SECRET_GOOGLE_ADS_CONFIG='{"developer_token":"...",...}'
+
+# Credenciais do Google Ads API
+export SECRET_GOOGLE_ADS_CONFIG='{"developer_token":"...","client_id":"...","client_secret":"...","refresh_token":"...","login_customer_id":"...","token_uri":"https://oauth2.googleapis.com/token","use_proto_plus":true}'
 ```
 
-Ou use arquivos de credenciais:
+Ou use arquivo para Google Cloud:
 
 ```bash
 export GOOGLE_APPLICATION_CREDENTIALS="/path/to/service-account.json"
-export GOOGLE_ADS_DEVELOPER_TOKEN="seu_token"
-export GOOGLE_ADS_CLIENT_ID="seu_client_id"
-export GOOGLE_ADS_CLIENT_SECRET="seu_client_secret"
-export GOOGLE_ADS_REFRESH_TOKEN="seu_refresh_token"
-export GOOGLE_ADS_LOGIN_CUSTOMER_ID="seu_login_customer_id"
+export SECRET_GOOGLE_ADS_CONFIG='{"developer_token":"...",...}'
 ```
 
 Depois execute:

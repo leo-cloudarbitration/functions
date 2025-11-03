@@ -82,25 +82,14 @@ def get_google_credentials():
 
 def get_google_ads_config():
     """
-    Obtém configuração do Google Ads a partir de variáveis de ambiente.
+    Obtém configuração do Google Ads a partir de variável de ambiente.
     """
-    # Tentar obter do SECRET_GOOGLE_ADS_CONFIG (GitHub Actions)
     ads_config_json = os.getenv("SECRET_GOOGLE_ADS_CONFIG")
-    if ads_config_json:
-        logger.info("✅ Usando configuração do Google Ads do SECRET_GOOGLE_ADS_CONFIG")
-        return json.loads(ads_config_json)
+    if not ads_config_json:
+        raise ValueError("❌ SECRET_GOOGLE_ADS_CONFIG não encontrado nas variáveis de ambiente!")
     
-    # Fallback para variáveis individuais
-    logger.info("✅ Usando configuração do Google Ads de variáveis de ambiente individuais")
-    return {
-        "developer_token": os.getenv("GOOGLE_ADS_DEVELOPER_TOKEN"),
-        "client_id": os.getenv("GOOGLE_ADS_CLIENT_ID"),
-        "client_secret": os.getenv("GOOGLE_ADS_CLIENT_SECRET"),
-        "refresh_token": os.getenv("GOOGLE_ADS_REFRESH_TOKEN"),
-        "login_customer_id": os.getenv("GOOGLE_ADS_LOGIN_CUSTOMER_ID"),
-        "token_uri": "https://oauth2.googleapis.com/token",
-        "use_proto_plus": True
-    }
+    logger.info("✅ Usando configuração do Google Ads do SECRET_GOOGLE_ADS_CONFIG")
+    return json.loads(ads_config_json)
 
 # ------------------------------------------------------------------------------
 # BIGQUERY CLIENT
