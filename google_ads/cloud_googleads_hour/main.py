@@ -201,32 +201,36 @@ def get_google_ads_data(client, customer_id):
         WHERE segments.date = '{hoje}'
     """
 
-    ga_service = client.get_service("GoogleAdsService", version="v17")
-    response = ga_service.search(customer_id=customer_id, query=query)
+    ga_service = client.get_service("GoogleAdsService")
+    
+    # Usar search_stream ao invés de search para compatibilidade
+    response = ga_service.search_stream(customer_id=customer_id, query=query)
 
     data = []
     # Timestamp de importação (hora de São Paulo)
     imported_at = datetime.now(sao_paulo_tz)
     
-    for row in response:
-        data.append({
-            "account_name": row.customer.descriptive_name if hasattr(row.customer, "descriptive_name") else "",
-            "account_id": str(row.customer.id) if hasattr(row.customer, "id") else "",
-            "campaign_id": str(row.campaign.id) if hasattr(row.campaign, "id") else "",
-            "campaign_name": row.campaign.name if hasattr(row.campaign, "name") else "",
-            "date": str(row.segments.date) if hasattr(row.segments, "date") else "",
-            "hour": int(row.segments.hour) if hasattr(row.segments, "hour") else 0,
-            "moeda": row.customer.currency_code if hasattr(row.customer, "currency_code") else "",
-            "budget": float(row.campaign_budget.amount_micros / 1_000_000) if hasattr(row, "campaign_budget") else 0.0,
-            "spend": float(row.metrics.cost_micros / 1_000_000) if hasattr(row.metrics, "cost_micros") else 0.0,
-            "clicks": int(row.metrics.clicks) if hasattr(row.metrics, "clicks") else 0,
-            "cpc": float(row.metrics.average_cpc / 1_000_000) if hasattr(row.metrics, "average_cpc") else 0.0,
-            "impressions": int(row.metrics.impressions) if hasattr(row.metrics, "impressions") else 0,
-            "ctr": float(row.metrics.ctr) if hasattr(row.metrics, "ctr") else 0.0,
-            "conversions": float(row.metrics.conversions) if hasattr(row.metrics, "conversions") else 0.0,
-            "cost_per_conversion": float(row.metrics.cost_per_conversion / 1_000_000) if hasattr(row.metrics, "cost_per_conversion") else 0.0,
-            "imported_at": imported_at
-        })
+    # search_stream retorna batches, precisamos iterar sobre eles
+    for batch in response:
+        for row in batch.results:
+            data.append({
+                "account_name": row.customer.descriptive_name if hasattr(row.customer, "descriptive_name") else "",
+                "account_id": str(row.customer.id) if hasattr(row.customer, "id") else "",
+                "campaign_id": str(row.campaign.id) if hasattr(row.campaign, "id") else "",
+                "campaign_name": row.campaign.name if hasattr(row.campaign, "name") else "",
+                "date": str(row.segments.date) if hasattr(row.segments, "date") else "",
+                "hour": int(row.segments.hour) if hasattr(row.segments, "hour") else 0,
+                "moeda": row.customer.currency_code if hasattr(row.customer, "currency_code") else "",
+                "budget": float(row.campaign_budget.amount_micros / 1_000_000) if hasattr(row, "campaign_budget") else 0.0,
+                "spend": float(row.metrics.cost_micros / 1_000_000) if hasattr(row.metrics, "cost_micros") else 0.0,
+                "clicks": int(row.metrics.clicks) if hasattr(row.metrics, "clicks") else 0,
+                "cpc": float(row.metrics.average_cpc / 1_000_000) if hasattr(row.metrics, "average_cpc") else 0.0,
+                "impressions": int(row.metrics.impressions) if hasattr(row.metrics, "impressions") else 0,
+                "ctr": float(row.metrics.ctr) if hasattr(row.metrics, "ctr") else 0.0,
+                "conversions": float(row.metrics.conversions) if hasattr(row.metrics, "conversions") else 0.0,
+                "cost_per_conversion": float(row.metrics.cost_per_conversion / 1_000_000) if hasattr(row.metrics, "cost_per_conversion") else 0.0,
+                "imported_at": imported_at
+            })
 
     return data
 
