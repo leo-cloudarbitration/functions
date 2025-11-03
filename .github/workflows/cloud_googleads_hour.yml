@@ -1,0 +1,52 @@
+name: Google Ads Hourly Data to BigQuery
+
+on:
+  # Agendamento: Todos os dias às 08:00 BRT (11:00 UTC)
+  schedule:
+    - cron: '0 11 * * *'
+  
+  # Permitir execução manual
+  workflow_dispatch:
+
+jobs:
+  collect-googleads-data:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: 🔄 Checkout do repositório
+        uses: actions/checkout@v4
+
+      - name: 🐍 Configurar Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: 📦 Instalar dependências
+        working-directory: google_ads/cloud_googleads_hour
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: 🔐 Configurar credenciais do Google Cloud
+        run: |
+          echo '${{ secrets.SECRET_GOOGLE_SERVICE_ACCOUNT }}' > /tmp/gcp-key.json
+          echo "GOOGLE_APPLICATION_CREDENTIALS=/tmp/gcp-key.json" >> $GITHUB_ENV
+
+      - name: 🔑 Configurar credenciais do Google Ads
+        run: |
+          echo "SECRET_GOOGLE_SERVICE_ACCOUNT=${{ secrets.SECRET_GOOGLE_SERVICE_ACCOUNT }}" >> $GITHUB_ENV
+          echo "SECRET_GOOGLE_ADS_CONFIG=${{ secrets.SECRET_GOOGLE_ADS_CONFIG }}" >> $GITHUB_ENV
+
+      - name: 🚀 Executar coleta de dados
+        working-directory: google_ads/cloud_googleads_hour
+        run: |
+          echo "🔍 Iniciando coleta de dados do Google Ads..."
+          python main.py
+          echo "✅ Coleta concluída!"
+
+      - name: 🧹 Limpar credenciais
+        if: always()
+        run: |
+          rm -f /tmp/gcp-key.json
+
