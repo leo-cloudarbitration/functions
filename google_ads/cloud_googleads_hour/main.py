@@ -166,7 +166,8 @@ def create_bigquery_table():
         bigquery.SchemaField("impressions", "INTEGER"),
         bigquery.SchemaField("ctr", "FLOAT"),
         bigquery.SchemaField("conversions", "FLOAT"),
-        bigquery.SchemaField("cost_per_conversion", "FLOAT")
+        bigquery.SchemaField("cost_per_conversion", "FLOAT"),
+        bigquery.SchemaField("imported_at", "TIMESTAMP")
     ]
 
     table = bigquery.Table(table_ref, schema=schema)
@@ -204,6 +205,9 @@ def get_google_ads_data(client, customer_id):
     response = ga_service.search(customer_id=customer_id, query=query)
 
     data = []
+    # Timestamp de importação (hora de São Paulo)
+    imported_at = datetime.now(sao_paulo_tz)
+    
     for row in response:
         data.append({
             "account_name": row.customer.descriptive_name if hasattr(row.customer, "descriptive_name") else "",
@@ -220,7 +224,8 @@ def get_google_ads_data(client, customer_id):
             "impressions": int(row.metrics.impressions) if hasattr(row.metrics, "impressions") else 0,
             "ctr": float(row.metrics.ctr) if hasattr(row.metrics, "ctr") else 0.0,
             "conversions": float(row.metrics.conversions) if hasattr(row.metrics, "conversions") else 0.0,
-            "cost_per_conversion": float(row.metrics.cost_per_conversion / 1_000_000) if hasattr(row.metrics, "cost_per_conversion") else 0.0
+            "cost_per_conversion": float(row.metrics.cost_per_conversion / 1_000_000) if hasattr(row.metrics, "cost_per_conversion") else 0.0,
+            "imported_at": imported_at
         })
 
     return data
@@ -238,6 +243,9 @@ def save_to_bigquery(data):
 
     # ✅ Corrigir o tipo da coluna 'date'
     df["date"] = pd.to_datetime(df["date"]).dt.date
+    
+    # ✅ Garantir que imported_at seja timestamp
+    df["imported_at"] = pd.to_datetime(df["imported_at"])
 
     # ✅ Reordenar colunas
     desired_order = [
@@ -255,7 +263,8 @@ def save_to_bigquery(data):
         "impressions",
         "ctr",
         "conversions",
-        "cost_per_conversion"
+        "cost_per_conversion",
+        "imported_at"
     ]
     df = df[desired_order]
 

@@ -141,4 +141,5 @@ python main.py
 | ctr | FLOAT | Taxa de cliques |
 | conversions | FLOAT | Número de conversões |
 | cost_per_conversion | FLOAT | Custo por conversão |
+| imported_at | TIMESTAMP | Data e hora da importação (BRT) |
 
