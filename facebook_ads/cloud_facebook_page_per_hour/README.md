@@ -30,10 +30,17 @@ facebook_ads/cloud_facebook_page_per_hour/
 
 ### 3. Execução
 
-O workflow pode ser executado:
-- **Agendado**: Configure no GitHub Actions (ex: diariamente às 06:00 BRT)
+O workflow é executado automaticamente:
+- **Agendado**: Todos os dias às 10:00 BRT (13:00 UTC)
 - **Manual**: Via `workflow_dispatch` no GitHub
 - **Local**: Execute `python main.py` para testes locais
+
+### 4. Workflow GitHub Actions
+
+O arquivo `.github/workflows/cloud_facebook_page_per_hour.yml` está configurado para:
+- Rodar automaticamente todos os dias às 10h da manhã (horário de Brasília)
+- Pode ser executado manualmente via GitHub Actions
+- Autentica automaticamente com Google Cloud usando secrets
 
 ### 4. Dados Coletados
 
@@ -49,6 +56,8 @@ O script coleta métricas de campanhas do Facebook de **ontem** com breakdown po
 
 Os dados são enviados para a tabela BigQuery:
 `data-v1-423414.test.cloud_facebook_page_per_hour`
+
+**Modo de escrita**: `WRITE_APPEND` - os dados são acumulados na tabela, permitindo histórico completo
 
 ### 6. Grupos de Contas
 
@@ -123,21 +132,26 @@ Os dados são agregados por:
 - `functions-framework`: Suporte para Cloud Functions
 - `pytz`: Timezone handling
 
-## Adaptações Necessárias
+## Configuração para Produção
 
-Antes de fazer deploy em produção, considere:
+### ✅ Já Configurado
 
-1. **Tokens de Acesso Facebook**: ⚠️ Os tokens do Facebook ainda estão hardcoded no arquivo. Considere movê-los para variáveis de ambiente ou secrets do GitHub para maior segurança
-2. **Credenciais GCP**: ✅ Já configurado para usar secrets do GitHub via `SECRET_GOOGLE_SERVICE_ACCOUNT`
-3. **Workflow File**: Criar `.github/workflows/cloud_facebook_page_per_hour.yml`
-4. **Table ID**: Validar a tabela de destino no BigQuery
-5. **Agendamento**: Configurar horário ideal de execução
+1. **Credenciais GCP**: ✅ Configurado para usar secrets do GitHub via `SECRET_GOOGLE_SERVICE_ACCOUNT`
+2. **Workflow GitHub Actions**: ✅ Criado e configurado para rodar às 10h BRT
+3. **Modo de Escrita**: ✅ WRITE_APPEND ativado para acumular histórico
+4. **Processamento Assíncrono**: ✅ Otimizado para máxima performance
 
-## Próximos Passos
+### ⚠️ Opcional
 
-- [ ] Criar workflow do GitHub Actions
-- [ ] Mover credenciais para secrets
-- [ ] Configurar agendamento automático
-- [ ] Testar execução completa
-- [ ] Documentar estrutura da tabela BigQuery
+1. **Tokens de Acesso Facebook**: Os tokens do Facebook estão hardcoded no arquivo. Considere movê-los para variáveis de ambiente ou secrets do GitHub para maior segurança
+2. **Table ID**: Validar se a tabela de destino no BigQuery está correta
+
+## Status do Projeto
+
+- [x] Criar workflow do GitHub Actions ✅
+- [x] Configurar agendamento automático (10h BRT diariamente) ✅
+- [x] Testar execução completa ✅
+- [x] Configurar WRITE_APPEND para acumular histórico ✅
+- [ ] Mover tokens do Facebook para secrets (opcional)
+- [ ] Documentar estrutura da tabela BigQuery (opcional)
 
