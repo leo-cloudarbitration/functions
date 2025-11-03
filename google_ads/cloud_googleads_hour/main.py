@@ -201,7 +201,7 @@ def get_google_ads_data(client, customer_id):
         WHERE segments.date = '{hoje}'
     """
 
-    ga_service = client.get_service("GoogleAdsService")
+    ga_service = client.get_service("GoogleAdsService", version="v17")
     response = ga_service.search(customer_id=customer_id, query=query)
 
     data = []
