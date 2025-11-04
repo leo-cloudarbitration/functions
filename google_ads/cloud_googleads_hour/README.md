@@ -111,14 +111,26 @@ python main.py
 
 **Problema:** Algumas contas falham com erro de GRPC no GitHub Actions, mas funcionam localmente.
 
-**Causa:** O Google Ads API usa GRPC por padrão, que pode ter problemas de rede/firewall no GitHub Actions.
+**Causa Principal:** ⚠️ **Versão antiga da biblioteca `google-ads`** (< 24.0.0) usando API v16 desatualizada.
+
+**Causas Secundárias:** 
+- Problemas de rede/firewall no GitHub Actions com GRPC
+- Stack gRPC desatualizado (grpcio, protobuf, etc.)
 
 **Soluções Implementadas:**
-1. ✅ **Retry Logic**: 3 tentativas com backoff exponencial (2s, 4s, 8s)
-2. ✅ **Delay entre contas**: 1 segundo de espera entre requisições
-3. ✅ **Variáveis de ambiente GRPC**: Otimizações de polling e fork support
-4. ✅ **Verificação de secrets**: Validação prévia antes do processamento
-5. ✅ **Processamento parcial**: Continua mesmo se algumas contas falharem
+1. ✅ **Atualização de dependências** (MAIS IMPORTANTE!)
+   - `google-ads >= 24.0.0` (usa API v19+, não mais v16)
+   - `grpcio >= 1.62.0` (stack GRPC atualizado)
+   - `protobuf >= 4.25.3` 
+   - `google-api-core >= 2.19.1`
+   - Todas as bibliotecas atualizadas em `requirements.txt`
+
+2. ✅ **Retry Logic**: 3 tentativas com backoff exponencial (2s, 4s, 8s)
+3. ✅ **Delay entre contas**: 1 segundo de espera entre requisições
+4. ✅ **Variáveis de ambiente GRPC**: Otimizações de polling e fork support
+5. ✅ **Verificação de secrets**: Validação prévia antes do processamento
+6. ✅ **Processamento parcial**: Continua mesmo se algumas contas falharem
+7. ✅ **Diagnóstico de versões**: Loga versões instaladas para debug
 
 **O que fazer:**
 - ✅ O script já está otimizado para lidar com esses erros
@@ -126,12 +138,28 @@ python main.py
 - ✅ O processo continua e salva dados das contas que funcionaram
 - ⚠️ Se TODAS as contas falharem, verifique a conectividade de rede do GitHub Actions
 
-**Logs esperados:**
+**Logs esperados (com versões atualizadas):**
+```
+📚 VERSÕES DAS BIBLIOTECAS INSTALADAS
+✅ google-ads: 24.1.0
+✅ grpcio: 1.62.1
+✅ google-api-core: 2.19.1
+
+Method: /google.ads.googleads.v19.services.GoogleAdsService/Search
+                                   ^^^ v19+ (NÃO mais v16!)
+
+INFO: 🔄 Tentativa 1/3 para customer_id 5088162800
+INFO: ✅ Sucesso na tentativa 1
+INFO: ✅ 145 registros extraídos
+```
+
+**Logs com erro (e retry funcionando):**
 ```
 INFO: 🔄 Tentativa 1/3 para customer_id 5088162800
 WARNING: ⚠️ Erro na tentativa 1/3: 501 GRPC target method can't be resolved.
 INFO: ⏳ Aguardando 2 segundos antes da próxima tentativa...
 INFO: 🔄 Tentativa 2/3 para customer_id 5088162800
+INFO: ✅ Sucesso na tentativa 2
 ```
 
 ### Erro de Credenciais

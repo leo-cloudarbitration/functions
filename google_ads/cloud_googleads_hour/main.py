@@ -70,6 +70,54 @@ CUSTOMER_IDS = [
 ]
 
 # ------------------------------------------------------------------------------
+# DIAGNÓSTICO DE VERSÕES
+# ------------------------------------------------------------------------------
+def log_library_versions():
+    """
+    Loga as versões das bibliotecas principais para debug.
+    Útil para identificar se versões antigas estão causando problemas.
+    """
+    logger.info("=" * 80)
+    logger.info("📚 VERSÕES DAS BIBLIOTECAS INSTALADAS")
+    logger.info("=" * 80)
+    
+    try:
+        import google.ads.googleads
+        logger.info(f"✅ google-ads: {google.ads.googleads.__version__}")
+    except Exception as e:
+        logger.warning(f"⚠️ google-ads: Erro ao obter versão - {e}")
+    
+    try:
+        import grpc
+        logger.info(f"✅ grpcio: {grpc.__version__}")
+    except Exception as e:
+        logger.warning(f"⚠️ grpcio: Erro ao obter versão - {e}")
+    
+    try:
+        import google.api_core
+        logger.info(f"✅ google-api-core: {google.api_core.__version__}")
+    except Exception as e:
+        logger.warning(f"⚠️ google-api-core: Erro ao obter versão - {e}")
+    
+    try:
+        import google.cloud.bigquery
+        logger.info(f"✅ google-cloud-bigquery: {google.cloud.bigquery.__version__}")
+    except Exception as e:
+        logger.warning(f"⚠️ google-cloud-bigquery: Erro ao obter versão - {e}")
+    
+    try:
+        import protobuf
+        logger.info(f"✅ protobuf: {protobuf.__version__}")
+    except Exception:
+        try:
+            import google.protobuf
+            logger.info(f"✅ protobuf: {google.protobuf.__version__}")
+        except Exception as e:
+            logger.warning(f"⚠️ protobuf: Erro ao obter versão - {e}")
+    
+    logger.info("=" * 80 + "\n")
+
+# ------------------------------------------------------------------------------
 # VERIFICAÇÃO DE SECRETS E CREDENCIAIS
 # ------------------------------------------------------------------------------
 def verify_secrets():
@@ -368,6 +416,8 @@ def get_google_ads_data(client, customer_id, max_retries=3):
     Returns:
         Lista de dados extraídos
     """
+    # ℹ️ NOTA: Você pode testar com YESTERDAY se quiser validar com dados garantidos
+    # WHERE segments.date DURING YESTERDAY
     query = f"""
         SELECT
             customer.id,
@@ -403,6 +453,14 @@ def get_google_ads_data(client, customer_id, max_retries=3):
             imported_at = datetime.now(sao_paulo_tz)
             
             for row in response:
+                # ✅ Acesso seguro ao budget (pode não existir em algumas campanhas)
+                budget = 0.0
+                try:
+                    if hasattr(row, "campaign_budget") and hasattr(row.campaign_budget, "amount_micros"):
+                        budget = float(row.campaign_budget.amount_micros) / 1_000_000
+                except Exception:
+                    pass
+                
                 data.append({
                     "account_name": row.customer.descriptive_name if hasattr(row.customer, "descriptive_name") else "",
                     "account_id": str(row.customer.id) if hasattr(row.customer, "id") else "",
@@ -411,7 +469,7 @@ def get_google_ads_data(client, customer_id, max_retries=3):
                     "date": str(row.segments.date) if hasattr(row.segments, "date") else "",
                     "hour": int(row.segments.hour) if hasattr(row.segments, "hour") else 0,
                     "moeda": row.customer.currency_code if hasattr(row.customer, "currency_code") else "",
-                    "budget": float(row.campaign_budget.amount_micros / 1_000_000) if hasattr(row, "campaign_budget") else 0.0,
+                    "budget": budget,
                     "spend": float(row.metrics.cost_micros / 1_000_000) if hasattr(row.metrics, "cost_micros") else 0.0,
                     "clicks": int(row.metrics.clicks) if hasattr(row.metrics, "clicks") else 0,
                     "cpc": float(row.metrics.average_cpc / 1_000_000) if hasattr(row.metrics, "average_cpc") else 0.0,
@@ -499,8 +557,11 @@ def ca_google_ads_today(event=None, context=None):
     logger.info("📅 Data: %s", hoje)
 
     try:
+        # ✅ PASSO 0: Verificar versões das bibliotecas
+        log_library_versions()
+        
         # ✅ PASSO 1: Verificar secrets e configurações
-        logger.info("\n" + "=" * 80)
+        logger.info("=" * 80)
         logger.info("🔐 ETAPA 1: VERIFICAÇÃO DE SECRETS")
         logger.info("=" * 80)
         

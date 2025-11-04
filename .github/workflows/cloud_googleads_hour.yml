@@ -1,38 +1,65 @@
-name: cloud_googleads_hour
+name: Google Ads Hourly → BigQuery
 
 on:
+  workflow_dispatch:  # Permite execução manual
   schedule:
-    - cron: "0 11 * * *"   # 08:00 BRT (GitHub usa UTC)
-  workflow_dispatch: {}
+    # Executa a cada hora no minuto 10 (ajuste conforme necessário)
+    - cron: "10 * * * *"
 
 jobs:
-  run:
+  collect-google-ads-data:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: google_ads/cloud_googleads_hour
-
+    
     steps:
-      - name: Checkout
+      - name: 📥 Checkout código
         uses: actions/checkout@v4
 
-      - name: Setup Python
+      - name: 🐍 Configurar Python 3.11
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
+          cache: 'pip'  # Cache automático baseado em requirements.txt
 
-      - name: Install dependencies
+      - name: 📦 Instalar dependências
+        working-directory: google_ads/cloud_googleads_hour
         run: |
-            python -m pip install --upgrade pip
-            pip install -r requirements.txt
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          
+      - name: 🔍 Verificar versões instaladas
+        run: |
+          echo "=== Versões das bibliotecas principais ==="
+          python -c "
+          import google.ads.googleads
+          import grpc
+          import google.api_core
+          import google.cloud.bigquery
+          print(f'✅ google-ads: {google.ads.googleads.__version__}')
+          print(f'✅ grpcio: {grpc.__version__}')
+          print(f'✅ google-api-core: {google.api_core.__version__}')
+          print(f'✅ google-cloud-bigquery: {google.cloud.bigquery.__version__}')
+          "
+          echo "=========================================="
 
-      - name: Authenticate to Google Cloud
-        uses: google-github-actions/auth@v2
-        with:
-          credentials_json: ${{ secrets.SECRET_GOOGLE_SERVICE_ACCOUNT }}
-
-      - name: Run Google Ads script
+      - name: 🚀 Executar coleta de dados
+        working-directory: google_ads/cloud_googleads_hour
         env:
+          SECRET_GOOGLE_SERVICE_ACCOUNT: ${{ secrets.SECRET_GOOGLE_SERVICE_ACCOUNT }}
           SECRET_GOOGLE_ADS_CONFIG: ${{ secrets.SECRET_GOOGLE_ADS_CONFIG }}
-        run: python main.py
+          # Variáveis de ambiente para otimizar GRPC
+          GRPC_ENABLE_FORK_SUPPORT: "1"
+          GRPC_POLL_STRATEGY: "poll"
+          GRPC_PYTHON_LOG_LEVEL: "ERROR"
+        run: |
+          python main.py
 
+      - name: ✅ Resultado
+        if: success()
+        run: |
+          echo "🎉 Dados coletados e enviados ao BigQuery com sucesso!"
+          
+      - name: ❌ Tratamento de erro
+        if: failure()
+        run: |
+          echo "❌ Falha na coleta de dados. Verifique os logs acima."
+          exit 1
