@@ -83,13 +83,56 @@ def get_google_credentials():
 def get_google_ads_config():
     """
     Obtém configuração do Google Ads a partir de variável de ambiente.
+    Inclui validação e correção automática do formato.
     """
     ads_config_json = os.getenv("SECRET_GOOGLE_ADS_CONFIG")
     if not ads_config_json:
         raise ValueError("❌ SECRET_GOOGLE_ADS_CONFIG não encontrado nas variáveis de ambiente!")
     
-    logger.info("✅ Usando configuração do Google Ads do SECRET_GOOGLE_ADS_CONFIG")
-    return json.loads(ads_config_json)
+    logger.info("✅ Carregando configuração do Google Ads do SECRET_GOOGLE_ADS_CONFIG")
+    logger.info(f"   Tamanho do JSON: {len(ads_config_json)} caracteres")
+    
+    # Correção automática: substituir True/False por true/false (Python → JSON)
+    ads_config_json = ads_config_json.replace(': True', ': true')
+    ads_config_json = ads_config_json.replace(': False', ': false')
+    ads_config_json = ads_config_json.replace(':True', ':true')
+    ads_config_json = ads_config_json.replace(':False', ':false')
+    
+    try:
+        config = json.loads(ads_config_json)
+        logger.info("✅ JSON parseado com sucesso")
+    except json.JSONDecodeError as e:
+        logger.error(f"❌ Erro ao fazer parse do JSON: {e}")
+        logger.error(f"   Posição do erro: linha {e.lineno}, coluna {e.colno}")
+        logger.error(f"   Trecho: ...{ads_config_json[max(0, e.pos-50):e.pos+50]}...")
+        raise ValueError(f"JSON inválido no SECRET_GOOGLE_ADS_CONFIG: {e}")
+    
+    # Validar campos obrigatórios
+    required_fields = ["developer_token", "client_id", "client_secret", "refresh_token", "login_customer_id"]
+    missing_fields = [field for field in required_fields if field not in config]
+    
+    if missing_fields:
+        logger.error(f"❌ Campos obrigatórios faltando: {missing_fields}")
+        raise ValueError(f"Campos obrigatórios faltando no SECRET_GOOGLE_ADS_CONFIG: {missing_fields}")
+    
+    # Log de informações (sem expor credenciais completas)
+    logger.info(f"   ✅ developer_token: {config['developer_token'][:10]}...")
+    logger.info(f"   ✅ client_id: {config['client_id'][:30]}...")
+    logger.info(f"   ✅ login_customer_id: {config['login_customer_id']}")
+    logger.info(f"   ✅ use_proto_plus: {config.get('use_proto_plus', True)}")
+    
+    # Garantir que use_proto_plus está presente
+    if 'use_proto_plus' not in config:
+        logger.info("   ℹ️ use_proto_plus não especificado, usando True por padrão")
+        config['use_proto_plus'] = True
+    
+    # Garantir que token_uri está presente
+    if 'token_uri' not in config:
+        logger.info("   ℹ️ token_uri não especificado, usando padrão do Google")
+        config['token_uri'] = "https://oauth2.googleapis.com/token"
+    
+    logger.info("✅ Configuração do Google Ads validada e pronta para uso")
+    return config
 
 # ------------------------------------------------------------------------------
 # BIGQUERY CLIENT
