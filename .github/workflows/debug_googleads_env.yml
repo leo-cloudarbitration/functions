@@ -1,0 +1,53 @@
+name: Debug Google Ads Environment
+
+on:
+  workflow_dispatch: {}
+
+jobs:
+  debug:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: google_ads/cloud_googleads_hour
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: |
+            python -m pip install --upgrade pip
+            pip install -r requirements.txt
+
+      - name: Show installed packages
+        run: |
+            echo "================================"
+            echo "GOOGLE ADS PACKAGE INFO"
+            echo "================================"
+            pip show google-ads
+            echo ""
+            echo "================================"
+            echo "GRPCIO PACKAGE INFO"
+            echo "================================"
+            pip show grpcio
+            echo ""
+            echo "================================"
+            echo "PROTOBUF PACKAGE INFO"
+            echo "================================"
+            pip show protobuf
+            echo ""
+            echo "================================"
+            echo "ALL INSTALLED PACKAGES"
+            echo "================================"
+            pip list
+            echo ""
+            echo "================================"
+            echo "PYTHON VERSION"
+            echo "================================"
+            python --version
+
