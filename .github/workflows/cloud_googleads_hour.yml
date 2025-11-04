@@ -1,10 +1,10 @@
-name: Google Ads Hourly → BigQuery
+name: cloud_googleads_hour
 
 on:
   workflow_dispatch:  # Permite execução manual
   schedule:
-    # Executa a cada hora no minuto 10 (ajuste conforme necessário)
-    - cron: "10 * * * *"
+    # Executa a cada hora no minuto 58
+    - cron: "58 * * * *"
 
 jobs:
   collect-google-ads-data:
