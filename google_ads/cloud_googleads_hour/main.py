@@ -81,39 +81,42 @@ def log_library_versions():
     logger.info("📚 VERSÕES DAS BIBLIOTECAS INSTALADAS")
     logger.info("=" * 80)
     
+    # google-ads - usar pkg_resources pois não tem __version__ direto
     try:
-        import google.ads.googleads
-        logger.info(f"✅ google-ads: {google.ads.googleads.__version__}")
+        import pkg_resources
+        ga_version = pkg_resources.get_distribution('google-ads').version
+        logger.info(f"✅ google-ads: {ga_version}")
     except Exception as e:
         logger.warning(f"⚠️ google-ads: Erro ao obter versão - {e}")
     
+    # grpcio
     try:
         import grpc
         logger.info(f"✅ grpcio: {grpc.__version__}")
     except Exception as e:
         logger.warning(f"⚠️ grpcio: Erro ao obter versão - {e}")
     
+    # google-api-core
     try:
         import google.api_core
         logger.info(f"✅ google-api-core: {google.api_core.__version__}")
     except Exception as e:
         logger.warning(f"⚠️ google-api-core: Erro ao obter versão - {e}")
     
+    # google-cloud-bigquery
     try:
         import google.cloud.bigquery
         logger.info(f"✅ google-cloud-bigquery: {google.cloud.bigquery.__version__}")
     except Exception as e:
         logger.warning(f"⚠️ google-cloud-bigquery: Erro ao obter versão - {e}")
     
+    # protobuf
     try:
-        import protobuf
-        logger.info(f"✅ protobuf: {protobuf.__version__}")
-    except Exception:
-        try:
-            import google.protobuf
-            logger.info(f"✅ protobuf: {google.protobuf.__version__}")
-        except Exception as e:
-            logger.warning(f"⚠️ protobuf: Erro ao obter versão - {e}")
+        import pkg_resources
+        pb_version = pkg_resources.get_distribution('protobuf').version
+        logger.info(f"✅ protobuf: {pb_version}")
+    except Exception as e:
+        logger.warning(f"⚠️ protobuf: Erro ao obter versão - {e}")
     
     logger.info("=" * 80 + "\n")
 

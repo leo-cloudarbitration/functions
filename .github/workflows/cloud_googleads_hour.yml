@@ -30,11 +30,15 @@ jobs:
         run: |
           echo "=== Versões das bibliotecas principais ==="
           python -c "
-          import google.ads.googleads
+          import pkg_resources
           import grpc
           import google.api_core
           import google.cloud.bigquery
-          print(f'✅ google-ads: {google.ads.googleads.__version__}')
+          try:
+              ga_version = pkg_resources.get_distribution('google-ads').version
+              print(f'✅ google-ads: {ga_version}')
+          except:
+              print('⚠️ google-ads: versão não detectada')
           print(f'✅ grpcio: {grpc.__version__}')
           print(f'✅ google-api-core: {google.api_core.__version__}')
           print(f'✅ google-cloud-bigquery: {google.cloud.bigquery.__version__}')
