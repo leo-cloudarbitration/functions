@@ -107,20 +107,50 @@ python main.py
 
 ## Troubleshooting
 
+### ❌ Erro: "GRPC target method can't be resolved" (501)
+
+**Problema:** Algumas contas falham com erro de GRPC no GitHub Actions, mas funcionam localmente.
+
+**Causa:** O Google Ads API usa GRPC por padrão, que pode ter problemas de rede/firewall no GitHub Actions.
+
+**Soluções Implementadas:**
+1. ✅ **Retry Logic**: 3 tentativas com backoff exponencial (2s, 4s, 8s)
+2. ✅ **Delay entre contas**: 1 segundo de espera entre requisições
+3. ✅ **Variáveis de ambiente GRPC**: Otimizações de polling e fork support
+4. ✅ **Verificação de secrets**: Validação prévia antes do processamento
+5. ✅ **Processamento parcial**: Continua mesmo se algumas contas falharem
+
+**O que fazer:**
+- ✅ O script já está otimizado para lidar com esses erros
+- ✅ Contas que falharem serão automaticamente retentadas 3 vezes
+- ✅ O processo continua e salva dados das contas que funcionaram
+- ⚠️ Se TODAS as contas falharem, verifique a conectividade de rede do GitHub Actions
+
+**Logs esperados:**
+```
+INFO: 🔄 Tentativa 1/3 para customer_id 5088162800
+WARNING: ⚠️ Erro na tentativa 1/3: 501 GRPC target method can't be resolved.
+INFO: ⏳ Aguardando 2 segundos antes da próxima tentativa...
+INFO: 🔄 Tentativa 2/3 para customer_id 5088162800
+```
+
 ### Erro de Credenciais
 - Verifique se os secrets estão configurados corretamente no GitHub
 - Confirme se o Service Account tem permissões no BigQuery
 - Verifique se as credenciais do Google Ads estão válidas
+- Use a verificação automática de secrets no início do script
 
 ### Erro de API
 - Confirme que o Developer Token está aprovado
 - Verifique se o Login Customer ID está correto
 - Confirme que as contas têm acesso às campanhas
+- Verifique se o refresh_token está válido e não expirou
 
 ### Dados Vazios
 - Verifique se há campanhas ativas nas contas
-- Confirme se há dados para a data atual
+- Confirme se há dados para a data atual (dados horários só aparecem após a hora)
 - Verifique os logs para mensagens de erro específicas
+- Algumas contas podem não ter dados para o horário atual
 
 ## Schema da Tabela BigQuery
 

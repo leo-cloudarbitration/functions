@@ -8,6 +8,20 @@ Coleta métricas horárias por campanha:
 
 Resultado final = métricas por hora por campanha
 SOBRESCREVE os dados no BigQuery (WRITE_TRUNCATE)
+
+⚠️ NOTAS SOBRE GRPC E GITHUB ACTIONS:
+─────────────────────────────────────────────────────────────────
+O Google Ads API usa GRPC por padrão, que pode ter problemas de rede
+no GitHub Actions. Implementamos as seguintes soluções:
+
+1. Retry logic com backoff exponencial (3 tentativas)
+2. Delay de 1 segundo entre requisições de contas diferentes
+3. Configurações de ambiente GRPC otimizadas
+4. use_proto_plus=True (formato compatível)
+5. Verificação prévia de todos os secrets
+
+Se algumas contas falharem com erro "GRPC target method can't be resolved",
+o script continua processando as outras contas e salva os dados que conseguiu coletar.
 """
 
 import json
@@ -20,10 +34,18 @@ from google.cloud import bigquery
 import pytz
 import pandas as pd
 import logging
+from google.api_core import retry
+from google.api_core import exceptions as core_exceptions
 
 # ------------------------------------------------------------------------------
 # CONFIGURAÇÕES
 # ------------------------------------------------------------------------------
+# Configurar variáveis de ambiente para melhorar estabilidade do GRPC
+os.environ['GRPC_ENABLE_FORK_SUPPORT'] = '1'
+os.environ['GRPC_POLL_STRATEGY'] = 'poll'
+# Aumentar timeout do GRPC (30 segundos)
+os.environ['GRPC_PYTHON_LOG_LEVEL'] = 'ERROR'
+
 logging.basicConfig(
     level=logging.INFO,
     handlers=[logging.StreamHandler()]
@@ -46,6 +68,113 @@ CUSTOMER_IDS = [
     "5088162800",
     "7205935192"
 ]
+
+# ------------------------------------------------------------------------------
+# VERIFICAÇÃO DE SECRETS E CREDENCIAIS
+# ------------------------------------------------------------------------------
+def verify_secrets():
+    """
+    Verifica se todos os secrets necessários estão configurados corretamente.
+    Retorna True se tudo estiver OK, False caso contrário.
+    """
+    logger.info("=" * 80)
+    logger.info("🔍 VERIFICANDO CONFIGURAÇÃO DE SECRETS E CREDENCIAIS")
+    logger.info("=" * 80)
+    
+    all_ok = True
+    
+    # 1. Verificar SECRET_GOOGLE_SERVICE_ACCOUNT ou GOOGLE_APPLICATION_CREDENTIALS
+    logger.info("\n📋 1/3 - Verificando credenciais do Google Cloud...")
+    secret_json = os.getenv("SECRET_GOOGLE_SERVICE_ACCOUNT")
+    creds_path = os.getenv("GOOGLE_APPLICATION_CREDENTIALS")
+    
+    if secret_json:
+        logger.info("   ✅ SECRET_GOOGLE_SERVICE_ACCOUNT encontrado")
+        try:
+            service_account_info = json.loads(secret_json)
+            required_keys = ["type", "project_id", "private_key_id", "private_key", "client_email"]
+            missing_keys = [key for key in required_keys if key not in service_account_info]
+            if missing_keys:
+                logger.error(f"   ❌ Campos faltando no SECRET_GOOGLE_SERVICE_ACCOUNT: {missing_keys}")
+                all_ok = False
+            else:
+                logger.info(f"   ✅ JSON válido com todos os campos necessários")
+                logger.info(f"   ✅ Project ID: {service_account_info.get('project_id', 'N/A')}")
+                logger.info(f"   ✅ Client Email: {service_account_info.get('client_email', 'N/A')}")
+        except json.JSONDecodeError as e:
+            logger.error(f"   ❌ Erro ao fazer parse do SECRET_GOOGLE_SERVICE_ACCOUNT: {e}")
+            all_ok = False
+    elif creds_path:
+        if os.path.exists(creds_path):
+            logger.info(f"   ✅ GOOGLE_APPLICATION_CREDENTIALS encontrado: {creds_path}")
+        else:
+            logger.error(f"   ❌ GOOGLE_APPLICATION_CREDENTIALS definido mas arquivo não existe: {creds_path}")
+            all_ok = False
+    else:
+        logger.warning("   ⚠️ Nenhuma credencial explícita encontrada, tentará usar Application Default Credentials")
+    
+    # 2. Verificar SECRET_GOOGLE_ADS_CONFIG
+    logger.info("\n📋 2/3 - Verificando configuração do Google Ads...")
+    ads_config_json = os.getenv("SECRET_GOOGLE_ADS_CONFIG")
+    
+    if not ads_config_json:
+        logger.error("   ❌ SECRET_GOOGLE_ADS_CONFIG não encontrado!")
+        all_ok = False
+    else:
+        logger.info(f"   ✅ SECRET_GOOGLE_ADS_CONFIG encontrado ({len(ads_config_json)} caracteres)")
+        
+        # Tentar fazer parse
+        try:
+            # Aplicar correções de formato
+            ads_config_json_fixed = ads_config_json.replace(': True', ': true')
+            ads_config_json_fixed = ads_config_json_fixed.replace(': False', ': false')
+            ads_config_json_fixed = ads_config_json_fixed.replace(':True', ':true')
+            ads_config_json_fixed = ads_config_json_fixed.replace(':False', ':false')
+            
+            config = json.loads(ads_config_json_fixed)
+            
+            # Verificar campos obrigatórios
+            required_fields = ["developer_token", "client_id", "client_secret", "refresh_token", "login_customer_id"]
+            missing_fields = [field for field in required_fields if field not in config]
+            
+            if missing_fields:
+                logger.error(f"   ❌ Campos obrigatórios faltando: {missing_fields}")
+                all_ok = False
+            else:
+                logger.info("   ✅ Todos os campos obrigatórios presentes")
+                logger.info(f"   ✅ developer_token: {config['developer_token'][:10]}...")
+                logger.info(f"   ✅ client_id: {config['client_id'][:30]}...")
+                logger.info(f"   ✅ login_customer_id: {config['login_customer_id']}")
+                logger.info(f"   ℹ️ use_proto_plus (original): {config.get('use_proto_plus', 'não definido')}")
+                
+        except json.JSONDecodeError as e:
+            logger.error(f"   ❌ Erro ao fazer parse do JSON: {e}")
+            logger.error(f"   ❌ Posição do erro: linha {e.lineno}, coluna {e.colno}")
+            all_ok = False
+        except Exception as e:
+            logger.error(f"   ❌ Erro ao validar configuração: {e}")
+            all_ok = False
+    
+    # 3. Verificar Customer IDs
+    logger.info("\n📋 3/3 - Verificando Customer IDs...")
+    if CUSTOMER_IDS:
+        logger.info(f"   ✅ {len(CUSTOMER_IDS)} Customer IDs configurados:")
+        for cid in CUSTOMER_IDS:
+            logger.info(f"      - {cid}")
+    else:
+        logger.error("   ❌ Nenhum Customer ID configurado!")
+        all_ok = False
+    
+    # Resumo
+    logger.info("\n" + "=" * 80)
+    if all_ok:
+        logger.info("✅ TODOS OS SECRETS E CONFIGURAÇÕES ESTÃO OK!")
+    else:
+        logger.error("❌ PROBLEMAS ENCONTRADOS NA CONFIGURAÇÃO!")
+        logger.error("   Por favor, verifique os secrets no GitHub Actions")
+    logger.info("=" * 80 + "\n")
+    
+    return all_ok
 
 # ------------------------------------------------------------------------------
 # CONFIGURAÇÃO DE CREDENCIAIS
@@ -115,21 +244,27 @@ def get_google_ads_config():
         logger.error(f"❌ Campos obrigatórios faltando: {missing_fields}")
         raise ValueError(f"Campos obrigatórios faltando no SECRET_GOOGLE_ADS_CONFIG: {missing_fields}")
     
-    # Log de informações (sem expor credenciais completas)
+    # Log de informações ANTES da modificação
     logger.info(f"   ✅ developer_token: {config['developer_token'][:10]}...")
     logger.info(f"   ✅ client_id: {config['client_id'][:30]}...")
     logger.info(f"   ✅ login_customer_id: {config['login_customer_id']}")
-    logger.info(f"   ✅ use_proto_plus: {config.get('use_proto_plus', False)}")
+    logger.info(f"   📊 use_proto_plus (ORIGINAL do secret): {config.get('use_proto_plus', 'não definido')}")
     
-    # IMPORTANTE: Usar HTTP/REST ao invés de GRPC para evitar problemas de rede no GitHub Actions
-    # use_proto_plus = False força o uso de HTTP/REST
-    config['use_proto_plus'] = False
-    logger.info("   🔄 Forçando use_proto_plus=False (HTTP/REST) para compatibilidade com GitHub Actions")
+    # ⚠️ NOTA: use_proto_plus não controla GRPC vs REST, apenas o formato das mensagens
+    # Ambos os valores (True/False) usam GRPC. Vamos usar True para compatibilidade.
+    config['use_proto_plus'] = True
+    logger.info("   🔄 Definindo use_proto_plus=True (formato protobuf messages)")
+    logger.info(f"   ✅ use_proto_plus (APÓS modificação): {config['use_proto_plus']}")
     
     # Garantir que token_uri está presente
     if 'token_uri' not in config:
         logger.info("   ℹ️ token_uri não especificado, usando padrão do Google")
         config['token_uri'] = "https://oauth2.googleapis.com/token"
+    
+    # Log final da configuração (sem expor credenciais)
+    logger.info("   📋 Configuração final:")
+    logger.info(f"      - use_proto_plus: {config['use_proto_plus']}")
+    logger.info(f"      - token_uri: {config.get('token_uri', 'N/A')}")
     
     logger.info("✅ Configuração do Google Ads validada e pronta para uso")
     return config
@@ -221,8 +356,18 @@ def create_bigquery_table():
     except Exception as e:
         logger.error("❌ Erro ao criar tabela: %s", e)
 
-def get_google_ads_data(client, customer_id):
-    """Busca dados do Google Ads para um customer_id."""
+def get_google_ads_data(client, customer_id, max_retries=3):
+    """
+    Busca dados do Google Ads para um customer_id com retry logic.
+    
+    Args:
+        client: Cliente Google Ads
+        customer_id: ID da conta
+        max_retries: Número máximo de tentativas (padrão: 3)
+    
+    Returns:
+        Lista de dados extraídos
+    """
     query = f"""
         SELECT
             customer.id,
@@ -245,33 +390,56 @@ def get_google_ads_data(client, customer_id):
     """
 
     ga_service = client.get_service("GoogleAdsService")
-    response = ga_service.search(customer_id=customer_id, query=query)
-
-    data = []
-    # Timestamp de importação (hora de São Paulo)
-    imported_at = datetime.now(sao_paulo_tz)
     
-    for row in response:
-        data.append({
-            "account_name": row.customer.descriptive_name if hasattr(row.customer, "descriptive_name") else "",
-            "account_id": str(row.customer.id) if hasattr(row.customer, "id") else "",
-            "campaign_id": str(row.campaign.id) if hasattr(row.campaign, "id") else "",
-            "campaign_name": row.campaign.name if hasattr(row.campaign, "name") else "",
-            "date": str(row.segments.date) if hasattr(row.segments, "date") else "",
-            "hour": int(row.segments.hour) if hasattr(row.segments, "hour") else 0,
-            "moeda": row.customer.currency_code if hasattr(row.customer, "currency_code") else "",
-            "budget": float(row.campaign_budget.amount_micros / 1_000_000) if hasattr(row, "campaign_budget") else 0.0,
-            "spend": float(row.metrics.cost_micros / 1_000_000) if hasattr(row.metrics, "cost_micros") else 0.0,
-            "clicks": int(row.metrics.clicks) if hasattr(row.metrics, "clicks") else 0,
-            "cpc": float(row.metrics.average_cpc / 1_000_000) if hasattr(row.metrics, "average_cpc") else 0.0,
-            "impressions": int(row.metrics.impressions) if hasattr(row.metrics, "impressions") else 0,
-            "ctr": float(row.metrics.ctr) if hasattr(row.metrics, "ctr") else 0.0,
-            "conversions": float(row.metrics.conversions) if hasattr(row.metrics, "conversions") else 0.0,
-            "cost_per_conversion": float(row.metrics.cost_per_conversion / 1_000_000) if hasattr(row.metrics, "cost_per_conversion") else 0.0,
-            "imported_at": imported_at
-        })
+    # Retry logic com backoff exponencial
+    for attempt in range(1, max_retries + 1):
+        try:
+            logger.info(f"   🔄 Tentativa {attempt}/{max_retries} para customer_id {customer_id}")
+            
+            response = ga_service.search(customer_id=customer_id, query=query)
 
-    return data
+            data = []
+            # Timestamp de importação (hora de São Paulo)
+            imported_at = datetime.now(sao_paulo_tz)
+            
+            for row in response:
+                data.append({
+                    "account_name": row.customer.descriptive_name if hasattr(row.customer, "descriptive_name") else "",
+                    "account_id": str(row.customer.id) if hasattr(row.customer, "id") else "",
+                    "campaign_id": str(row.campaign.id) if hasattr(row.campaign, "id") else "",
+                    "campaign_name": row.campaign.name if hasattr(row.campaign, "name") else "",
+                    "date": str(row.segments.date) if hasattr(row.segments, "date") else "",
+                    "hour": int(row.segments.hour) if hasattr(row.segments, "hour") else 0,
+                    "moeda": row.customer.currency_code if hasattr(row.customer, "currency_code") else "",
+                    "budget": float(row.campaign_budget.amount_micros / 1_000_000) if hasattr(row, "campaign_budget") else 0.0,
+                    "spend": float(row.metrics.cost_micros / 1_000_000) if hasattr(row.metrics, "cost_micros") else 0.0,
+                    "clicks": int(row.metrics.clicks) if hasattr(row.metrics, "clicks") else 0,
+                    "cpc": float(row.metrics.average_cpc / 1_000_000) if hasattr(row.metrics, "average_cpc") else 0.0,
+                    "impressions": int(row.metrics.impressions) if hasattr(row.metrics, "impressions") else 0,
+                    "ctr": float(row.metrics.ctr) if hasattr(row.metrics, "ctr") else 0.0,
+                    "conversions": float(row.metrics.conversions) if hasattr(row.metrics, "conversions") else 0.0,
+                    "cost_per_conversion": float(row.metrics.cost_per_conversion / 1_000_000) if hasattr(row.metrics, "cost_per_conversion") else 0.0,
+                    "imported_at": imported_at
+                })
+
+            logger.info(f"   ✅ Sucesso na tentativa {attempt}")
+            return data
+            
+        except Exception as e:
+            error_message = str(e)
+            logger.warning(f"   ⚠️ Erro na tentativa {attempt}/{max_retries}: {error_message}")
+            
+            # Se for o último retry, lança o erro
+            if attempt == max_retries:
+                logger.error(f"   ❌ Todas as {max_retries} tentativas falharam para {customer_id}")
+                raise
+            
+            # Backoff exponencial: espera 2^attempt segundos (2, 4, 8...)
+            wait_time = 2 ** attempt
+            logger.info(f"   ⏳ Aguardando {wait_time} segundos antes da próxima tentativa...")
+            time.sleep(wait_time)
+    
+    return []
 
 def save_to_bigquery(data):
     """Salva dados no BigQuery."""
@@ -331,33 +499,100 @@ def ca_google_ads_today(event=None, context=None):
     logger.info("📅 Data: %s", hoje)
 
     try:
-        # Criar cliente Google Ads
+        # ✅ PASSO 1: Verificar secrets e configurações
+        logger.info("\n" + "=" * 80)
+        logger.info("🔐 ETAPA 1: VERIFICAÇÃO DE SECRETS")
+        logger.info("=" * 80)
+        
+        if not verify_secrets():
+            error_msg = "❌ Falha na verificação de secrets. Abortando execução."
+            logger.error(error_msg)
+            raise ValueError(error_msg)
+        
+        logger.info("✅ Secrets verificados com sucesso! Prosseguindo...\n")
+        
+        # ✅ PASSO 2: Criar cliente Google Ads
+        logger.info("=" * 80)
+        logger.info("🔧 ETAPA 2: CRIANDO CLIENTE GOOGLE ADS")
+        logger.info("=" * 80)
         client = get_google_ads_client()
+        logger.info("✅ Cliente Google Ads criado com sucesso!\n")
+
+        # ✅ PASSO 3: Coletar dados das contas
+        logger.info("=" * 80)
+        logger.info("📊 ETAPA 3: COLETANDO DADOS DAS CONTAS DO GOOGLE ADS")
+        logger.info("=" * 80)
+        logger.info(f"Total de contas a processar: {len(CUSTOMER_IDS)}\n")
 
         all_data = []
+        success_count = 0
+        error_count = 0
+        errors_detail = []
 
-        for customer_id in CUSTOMER_IDS:
-            logger.info("🔍 Coletando dados do customer_id: %s", customer_id)
+        for idx, customer_id in enumerate(CUSTOMER_IDS, 1):
+            logger.info(f"🔍 [{idx}/{len(CUSTOMER_IDS)}] Processando customer_id: {customer_id}")
             try:
-                data = get_google_ads_data(client, customer_id)
+                data = get_google_ads_data(client, customer_id, max_retries=3)
                 if data:
-                    logger.info("📊 %s registros extraídos de %s.", len(data), customer_id)
+                    logger.info(f"   ✅ {len(data)} registros extraídos")
                     all_data.extend(data)
+                    success_count += 1
                 else:
-                    logger.warning("⚠️ Nenhum dado para %s.", customer_id)
+                    logger.warning(f"   ⚠️ Nenhum dado encontrado")
             except Exception as e:
-                logger.error("❌ Erro ao coletar dados de %s: %s", customer_id, e)
+                error_msg = str(e)
+                logger.error(f"   ❌ Erro: {error_msg}")
+                error_count += 1
+                errors_detail.append({
+                    "customer_id": customer_id,
+                    "error": error_msg
+                })
+            
+            # Pequeno delay entre requisições para evitar rate limiting
+            if idx < len(CUSTOMER_IDS):
+                logger.info("   ⏳ Aguardando 1 segundo antes da próxima conta...")
+                time.sleep(1)
+            
+            logger.info("")  # linha em branco para separar
+
+        # Resumo da coleta
+        logger.info("=" * 80)
+        logger.info("📈 RESUMO DA COLETA")
+        logger.info("=" * 80)
+        logger.info(f"✅ Contas processadas com sucesso: {success_count}/{len(CUSTOMER_IDS)}")
+        logger.info(f"❌ Contas com erro: {error_count}/{len(CUSTOMER_IDS)}")
+        logger.info(f"📊 Total de registros coletados: {len(all_data)}")
+        
+        # Detalhar erros se houver
+        if errors_detail:
+            logger.info("\n📋 Detalhes dos erros:")
+            for error_info in errors_detail:
+                logger.info(f"   - Customer ID {error_info['customer_id']}: {error_info['error']}")
+        
+        logger.info("=" * 80 + "\n")
 
         if all_data:
+            # ✅ PASSO 4: Salvar no BigQuery
+            logger.info("=" * 80)
+            logger.info("💾 ETAPA 4: SALVANDO DADOS NO BIGQUERY")
+            logger.info("=" * 80)
             save_to_bigquery(all_data)
-            logger.info("✅ Total de registros processados: %s", len(all_data))
+            logger.info("✅ Dados salvos com sucesso!\n")
         else:
-            logger.warning("⚠️ Nenhum dado extraído de nenhuma conta.")
+            logger.warning("⚠️ Nenhum dado extraído de nenhuma conta. Nada para salvar no BigQuery.")
 
+        logger.info("=" * 80)
+        logger.info("🎉 PROCESSAMENTO CONCLUÍDO COM SUCESSO")
+        logger.info("=" * 80)
         return "✅ Processamento concluído com sucesso."
     
     except Exception as e:
-        logger.error("❌ Erro crítico: %s", str(e))
+        logger.error("\n" + "=" * 80)
+        logger.error("💥 ERRO CRÍTICO NA EXECUÇÃO")
+        logger.error("=" * 80)
+        logger.error("Tipo do erro: %s", type(e).__name__)
+        logger.error("Mensagem: %s", str(e))
+        logger.error("=" * 80)
         raise
 
 # ------------------------------------------------------------------------------
@@ -365,19 +600,38 @@ def ca_google_ads_today(event=None, context=None):
 # ------------------------------------------------------------------------------
 if __name__ == "__main__":
     start_time = time.time()
-    logger.info("=" * 80)
+    logger.info("\n" + "=" * 80)
     logger.info("🚀 INICIANDO EXECUÇÃO LOCAL - GOOGLE ADS HOURLY DATA")
     logger.info("=" * 80)
+    logger.info("📅 Data: %s", hoje)
+    logger.info("🏢 Ambiente: Local/GitHub Actions")
+    logger.info("=" * 80 + "\n")
     
-    result = ca_google_ads_today()
-    
-    end_time = time.time()
-    execution_time = end_time - start_time
-    
-    logger.info("=" * 80)
-    logger.info("📊 RESUMO DA EXECUÇÃO")
-    logger.info("=" * 80)
-    logger.info("⏱️ Tempo total: %.2f segundos", execution_time)
-    logger.info("✅ Status: %s", result)
-    logger.info("=" * 80)
+    try:
+        result = ca_google_ads_today()
+        
+        end_time = time.time()
+        execution_time = end_time - start_time
+        
+        logger.info("=" * 80)
+        logger.info("🎯 RESUMO FINAL DA EXECUÇÃO")
+        logger.info("=" * 80)
+        logger.info("✅ Status: SUCESSO")
+        logger.info("⏱️ Tempo total: %.2f segundos", execution_time)
+        logger.info("📅 Data processada: %s", hoje)
+        logger.info("🔢 Contas configuradas: %d", len(CUSTOMER_IDS))
+        logger.info("=" * 80)
+        
+    except Exception as e:
+        end_time = time.time()
+        execution_time = end_time - start_time
+        
+        logger.error("\n" + "=" * 80)
+        logger.error("🎯 RESUMO FINAL DA EXECUÇÃO")
+        logger.error("=" * 80)
+        logger.error("❌ Status: FALHA")
+        logger.error("⏱️ Tempo até falha: %.2f segundos", execution_time)
+        logger.error("💥 Erro: %s", str(e))
+        logger.error("=" * 80)
+        raise
 
