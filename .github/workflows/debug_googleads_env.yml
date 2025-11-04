@@ -17,7 +17,7 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.12"
+          python-version: "3.11"
 
       - name: Install dependencies
         run: |
@@ -50,4 +50,14 @@ jobs:
             echo "PYTHON VERSION"
             echo "================================"
             python --version
+      
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.SECRET_GOOGLE_SERVICE_ACCOUNT }}
+      
+      - name: Test Google Ads Credentials
+        env:
+          SECRET_GOOGLE_ADS_CONFIG: ${{ secrets.SECRET_GOOGLE_ADS_CONFIG }}
+        run: python test_credentials.py
 
