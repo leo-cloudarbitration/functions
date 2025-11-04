@@ -119,12 +119,12 @@ def get_google_ads_config():
     logger.info(f"   ✅ developer_token: {config['developer_token'][:10]}...")
     logger.info(f"   ✅ client_id: {config['client_id'][:30]}...")
     logger.info(f"   ✅ login_customer_id: {config['login_customer_id']}")
-    logger.info(f"   ✅ use_proto_plus: {config.get('use_proto_plus', True)}")
+    logger.info(f"   ✅ use_proto_plus: {config.get('use_proto_plus', False)}")
     
-    # Garantir que use_proto_plus está presente
-    if 'use_proto_plus' not in config:
-        logger.info("   ℹ️ use_proto_plus não especificado, usando True por padrão")
-        config['use_proto_plus'] = True
+    # IMPORTANTE: Usar HTTP/REST ao invés de GRPC para evitar problemas de rede no GitHub Actions
+    # use_proto_plus = False força o uso de HTTP/REST
+    config['use_proto_plus'] = False
+    logger.info("   🔄 Forçando use_proto_plus=False (HTTP/REST) para compatibilidade com GitHub Actions")
     
     # Garantir que token_uri está presente
     if 'token_uri' not in config:
