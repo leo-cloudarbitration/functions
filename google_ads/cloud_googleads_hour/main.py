@@ -516,8 +516,9 @@ def save_to_bigquery(data):
     # ✅ Corrigir o tipo da coluna 'date'
     df["date"] = pd.to_datetime(df["date"]).dt.date
     
-    # ✅ Garantir que imported_at seja timestamp
-    df["imported_at"] = pd.to_datetime(df["imported_at"])
+    # ✅ Garantir que imported_at seja timestamp UTC (BigQuery requer UTC)
+    # Converter timezone-aware datetime para UTC e depois remover timezone info
+    df["imported_at"] = pd.to_datetime(df["imported_at"]).dt.tz_convert('UTC').dt.tz_localize(None)
 
     # ✅ Reordenar colunas
     desired_order = [
@@ -539,6 +540,13 @@ def save_to_bigquery(data):
         "imported_at"
     ]
     df = df[desired_order]
+    
+    # Log de informações sobre os dados
+    logger.info(f"   📊 Total de linhas: {len(df)}")
+    logger.info(f"   📅 Exemplo de imported_at: {df['imported_at'].iloc[0] if len(df) > 0 else 'N/A'}")
+    logger.info(f"   🔢 Tipos de dados:")
+    for col in ['date', 'hour', 'imported_at']:
+        logger.info(f"      - {col}: {df[col].dtype}")
 
     # Enviar ao BigQuery (WRITE_TRUNCATE - sobrescreve dados existentes)
     bq_client = get_bq_client()
@@ -547,6 +555,8 @@ def save_to_bigquery(data):
     job.result()
 
     logger.info("✅ Dados inseridos com sucesso no BigQuery!")
+    logger.info(f"   📋 Tabela: {BIGQUERY_TABLE_ID}")
+    logger.info(f"   📊 Registros inseridos: {len(df)}")
 
 # ------------------------------------------------------------------------------
 # FUNÇÃO PRINCIPAL
