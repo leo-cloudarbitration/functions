@@ -46,7 +46,7 @@ SHEETS_RANGE = "Sheet1"  # Ajuste se necessário
 # Configurações BigQuery
 BIGQUERY_PROJECT = "data-v1-423414"
 BIGQUERY_DATASET = "test"
-BIGQUERY_TABLE = "cloud_snapshot_page_per_hour"
+BIGQUERY_TABLE = "cloud_helper_page_per_hour"
 TABLE_ID = f"{BIGQUERY_PROJECT}.{BIGQUERY_DATASET}.{BIGQUERY_TABLE}"
 
 # ------------------------------------------------------------------------------
