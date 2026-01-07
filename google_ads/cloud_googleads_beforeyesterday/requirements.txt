@@ -1,31 +1,23 @@
-# Google Ads API
-google-ads==24.1.0
+# Google Ads API (versão mais recente com v19+ e melhor suporte GRPC)
+google-ads>=24.0.0
 
-# Google Cloud
-google-cloud-bigquery==3.26.0
-google-auth==2.35.0
+# Stack gRPC estável e recente
+grpcio>=1.62.0
+grpcio-status>=1.62.0
+protobuf>=4.25.3,<5.0.0
+google-api-core>=2.19.1
+proto-plus>=1.24.0
 
-# Processamento de dados
-pandas==2.2.3
-pyarrow==18.1.0
+# Autenticação
+google-auth>=2.35.0
+google-auth-oauthlib>=1.2.0
+google-auth-httplib2>=0.2.0
 
-# Timezone
-pytz==2024.2
+# BigQuery
+google-cloud-bigquery>=3.25.0
 
-# Dependências de rede e GRPC
-grpcio==1.68.1
-grpcio-status==1.68.1
-google-api-core==2.23.0
-
-# Protobuf
-protobuf==5.29.1
-
-# HTTP/OAuth
-requests==2.32.3
-oauthlib==3.2.2
-requests-oauthlib==2.0.0
-
-# Utilitários
-python-dateutil==2.9.0
-urllib3==2.2.3
+# Data processing
+pandas>=2.2.2
+pyarrow>=17.0.0
+pytz>=2024.1
 
