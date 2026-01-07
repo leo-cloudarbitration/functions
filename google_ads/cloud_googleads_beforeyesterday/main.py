@@ -3,8 +3,8 @@ Google Ads → BigQuery (Cloud Function) - DADOS DE ANTEONTEM
 ─────────────────────────────────────────────────────────────────
 Coleta métricas diárias de ANTEONTEM (2 dias atrás) por campanha:
 - date, account_id, account_name, campaign_id, campaign_name
-- spend, clicks, cpc, impressions, ctr, conversions, cost_per_conversion
-- moeda, budget
+- spend, clicks, average_cpc, impressions, ctr, conv, cost_per_conversion
+- currency, budget
 
 Resultado final = métricas do dia de anteontem por campanha
 ADICIONA os dados no BigQuery (WRITE_APPEND)
@@ -293,21 +293,20 @@ def create_bigquery_table():
     table_ref = dataset_ref.table(table_name)
 
     schema = [
-        bigquery.SchemaField("account_name", "STRING"),
         bigquery.SchemaField("account_id", "STRING"),
+        bigquery.SchemaField("account_name", "STRING"),
         bigquery.SchemaField("campaign_id", "STRING"),
         bigquery.SchemaField("campaign_name", "STRING"),
         bigquery.SchemaField("date", "DATE"),
-        bigquery.SchemaField("moeda", "STRING"),
+        bigquery.SchemaField("currency", "STRING"),
         bigquery.SchemaField("budget", "FLOAT"),
         bigquery.SchemaField("spend", "FLOAT"),
         bigquery.SchemaField("clicks", "INTEGER"),
-        bigquery.SchemaField("cpc", "FLOAT"),
+        bigquery.SchemaField("average_cpc", "FLOAT"),
         bigquery.SchemaField("impressions", "INTEGER"),
         bigquery.SchemaField("ctr", "FLOAT"),
-        bigquery.SchemaField("conversions", "FLOAT"),
-        bigquery.SchemaField("cost_per_conversion", "FLOAT"),
-        bigquery.SchemaField("imported_at", "TIMESTAMP")
+        bigquery.SchemaField("conv", "FLOAT"),
+        bigquery.SchemaField("cost_per_conversion", "FLOAT")
     ]
 
     table = bigquery.Table(table_ref, schema=schema)
@@ -352,7 +351,6 @@ def get_google_ads_data(client, customer_id, max_retries=3):
             response = ga_service.search(customer_id=customer_id, query=query)
 
             data = []
-            imported_at = datetime.now(sao_paulo_tz)
             
             for row in response:
                 budget = 0.0
@@ -363,21 +361,20 @@ def get_google_ads_data(client, customer_id, max_retries=3):
                     pass
                 
                 data.append({
-                    "account_name": row.customer.descriptive_name if hasattr(row.customer, "descriptive_name") else "",
                     "account_id": str(row.customer.id) if hasattr(row.customer, "id") else "",
+                    "account_name": row.customer.descriptive_name if hasattr(row.customer, "descriptive_name") else "",
                     "campaign_id": str(row.campaign.id) if hasattr(row.campaign, "id") else "",
                     "campaign_name": row.campaign.name if hasattr(row.campaign, "name") else "",
                     "date": str(row.segments.date) if hasattr(row.segments, "date") else "",
-                    "moeda": row.customer.currency_code if hasattr(row.customer, "currency_code") else "",
+                    "currency": row.customer.currency_code if hasattr(row.customer, "currency_code") else "",
                     "budget": budget,
                     "spend": float(row.metrics.cost_micros / 1_000_000) if hasattr(row.metrics, "cost_micros") else 0.0,
                     "clicks": int(row.metrics.clicks) if hasattr(row.metrics, "clicks") else 0,
-                    "cpc": float(row.metrics.average_cpc / 1_000_000) if hasattr(row.metrics, "average_cpc") else 0.0,
+                    "average_cpc": float(row.metrics.average_cpc / 1_000_000) if hasattr(row.metrics, "average_cpc") else 0.0,
                     "impressions": int(row.metrics.impressions) if hasattr(row.metrics, "impressions") else 0,
                     "ctr": float(row.metrics.ctr) if hasattr(row.metrics, "ctr") else 0.0,
-                    "conversions": float(row.metrics.conversions) if hasattr(row.metrics, "conversions") else 0.0,
-                    "cost_per_conversion": float(row.metrics.cost_per_conversion / 1_000_000) if hasattr(row.metrics, "cost_per_conversion") else 0.0,
-                    "imported_at": imported_at
+                    "conv": float(row.metrics.conversions) if hasattr(row.metrics, "conversions") else 0.0,
+                    "cost_per_conversion": float(row.metrics.cost_per_conversion / 1_000_000) if hasattr(row.metrics, "cost_per_conversion") else 0.0
                 })
 
             logger.info(f"   ✅ Sucesso na tentativa {attempt}")
@@ -406,12 +403,12 @@ def save_to_bigquery(data):
 
     df = pd.DataFrame(data)
     df["date"] = pd.to_datetime(df["date"]).dt.date
-    df["imported_at"] = pd.to_datetime(df["imported_at"]).dt.tz_convert('UTC').dt.tz_localize(None)
 
+    # Ordem dos campos conforme schema da tabela existente
     desired_order = [
-        "account_name", "account_id", "campaign_id", "campaign_name",
-        "date", "moeda", "budget", "spend", "clicks", "cpc",
-        "impressions", "ctr", "conversions", "cost_per_conversion", "imported_at"
+        "account_id", "account_name", "campaign_id", "campaign_name",
+        "date", "currency", "budget", "spend", "clicks", "average_cpc",
+        "impressions", "ctr", "conv", "cost_per_conversion"
     ]
     df = df[desired_order]
     
