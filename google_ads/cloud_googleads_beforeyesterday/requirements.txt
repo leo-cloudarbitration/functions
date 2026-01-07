@@ -1,0 +1,31 @@
+# Google Ads API
+google-ads==24.1.0
+
+# Google Cloud
+google-cloud-bigquery==3.26.0
+google-auth==2.35.0
+
+# Processamento de dados
+pandas==2.2.3
+pyarrow==18.1.0
+
+# Timezone
+pytz==2024.2
+
+# Dependências de rede e GRPC
+grpcio==1.68.1
+grpcio-status==1.68.1
+google-api-core==2.23.0
+
+# Protobuf
+protobuf==5.29.1
+
+# HTTP/OAuth
+requests==2.32.3
+oauthlib==3.2.2
+requests-oauthlib==2.0.0
+
+# Utilitários
+python-dateutil==2.9.0
+urllib3==2.2.3
+
