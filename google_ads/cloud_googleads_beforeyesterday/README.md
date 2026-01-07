@@ -14,19 +14,19 @@ Coletar métricas diárias de campanhas do Google Ads do dia **ANTEONTEM** (befo
 ## 📊 Dados Coletados
 
 ### Campos extraídos:
-- `account_id` - ID da conta
 - `account_name` - Nome da conta
+- `account_id` - ID da conta
 - `campaign_id` - ID da campanha
 - `campaign_name` - Nome da campanha
 - `date` - Data dos dados (ANTEONTEM)
-- `currency` - Código da moeda (BRL, USD, etc)
+- `moeda` - Código da moeda (BRL, USD, etc)
 - `budget` - Budget da campanha
 - `spend` - Gasto total
 - `clicks` - Número de cliques
-- `average_cpc` - Custo por clique médio
+- `cpc` - Custo por clique médio
 - `impressions` - Número de impressões
 - `ctr` - Taxa de cliques
-- `conv` - Número de conversões
+- `conversions` - Número de conversões
 - `cost_per_conversion` - Custo por conversão
 
 ## 🗄️ Destino
@@ -157,7 +157,7 @@ O script gera logs detalhados:
 2. **Timezone:** Usa timezone de São Paulo (America/Sao_Paulo)
 3. **Modo de escrita:** APPEND (não sobrescreve dados existentes)
 4. **GRPC:** Usa GRPC por padrão para comunicação com Google Ads API
-5. **Schema:** Usa o schema da tabela existente (sem campo `imported_at`)
+5. **Schema:** Compatível com a tabela existente `ca_googleads_historical`
 
 ## 🔍 Troubleshooting
 
@@ -177,19 +177,19 @@ O script gera logs detalhados:
 
 ```sql
 CREATE TABLE `data-v1-423414.test.ca_googleads_historical` (
-  account_id STRING,
   account_name STRING,
+  account_id STRING,
   campaign_id STRING,
   campaign_name STRING,
   date DATE,
-  currency STRING,
+  moeda STRING,
   budget FLOAT64,
   spend FLOAT64,
   clicks INT64,
-  average_cpc FLOAT64,
+  cpc FLOAT64,
   impressions INT64,
   ctr FLOAT64,
-  conv FLOAT64,
+  conversions FLOAT64,
   cost_per_conversion FLOAT64
 );
 ```
