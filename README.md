@@ -103,4 +103,5 @@ git push origin main
 ```
 
 ---
-*Última atualização: 27/10/2025*
+*Última atualização: 07/01/2026*
+*Workflows reativados e funcionando normalmente* ✅
