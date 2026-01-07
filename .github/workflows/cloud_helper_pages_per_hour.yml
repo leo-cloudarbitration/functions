@@ -1,4 +1,5 @@
 name: cloud_helper_pages_per_hour
+# Reativado em 07/01/2026
 
 on:
   schedule:
