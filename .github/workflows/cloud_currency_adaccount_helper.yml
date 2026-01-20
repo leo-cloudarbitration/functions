@@ -1,0 +1,37 @@
+name: cloud_currency_adaccount_helper
+
+on:
+  schedule:
+    # 10:05 BRT = 13:05 UTC (Brasil está em UTC-3)
+    - cron: "5 13 * * *"
+  workflow_dispatch: {}
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: helper/cloud_currency_adaccount_helper
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: |
+            python -m pip install --upgrade pip
+            pip install -r requirements.txt
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.SECRET_GOOGLE_SERVICE_ACCOUNT }}
+
+      - name: Run Currency Helper Sync
+        run: python main.py
+
