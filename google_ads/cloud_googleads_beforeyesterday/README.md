@@ -28,6 +28,7 @@ Coletar métricas diárias de campanhas do Google Ads do dia **ANTEONTEM** (befo
 - `ctr` - Taxa de cliques
 - `conversions` - Número de conversões
 - `cost_per_conversion` - Custo por conversão
+- `imported_at` - Timestamp da importação
 
 ## 🗄️ Destino
 
@@ -157,7 +158,6 @@ O script gera logs detalhados:
 2. **Timezone:** Usa timezone de São Paulo (America/Sao_Paulo)
 3. **Modo de escrita:** APPEND (não sobrescreve dados existentes)
 4. **GRPC:** Usa GRPC por padrão para comunicação com Google Ads API
-5. **Schema:** Compatível com a tabela existente `ca_googleads_historical`
 
 ## 🔍 Troubleshooting
 
@@ -190,7 +190,8 @@ CREATE TABLE `data-v1-423414.test.ca_googleads_historical` (
   impressions INT64,
   ctr FLOAT64,
   conversions FLOAT64,
-  cost_per_conversion FLOAT64
+  cost_per_conversion FLOAT64,
+  imported_at TIMESTAMP
 );
 ```
 
