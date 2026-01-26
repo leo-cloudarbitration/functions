@@ -4,11 +4,12 @@ Este projeto coleta dados de performance de campanhas do Facebook **agregados po
 
 ## 🎯 Objetivo
 
-Coletar métricas horárias de campanhas do Facebook do dia atual e armazenar no BigQuery para análise histórica.
+Coletar métricas horárias de campanhas do Facebook de **ONTEM** e armazenar no BigQuery para análise histórica.
 
 ## 📅 Período de Coleta
 
-- **Data coletada:** HOJE (date_preset: "today")
+- **Data coletada:** ONTEM (date_preset: "yesterday")
+- **Exemplo:** Se hoje é 07/01/2026, coleta dados de 06/01/2026
 - **Breakdown:** Por hora (hourly_stats_aggregated_by_advertiser_time_zone)
 
 ## 📊 Dados Coletados
@@ -28,7 +29,7 @@ Coletar métricas horárias de campanhas do Facebook do dia atual e armazenar no
 
 **BigQuery:**
 - **Tabela:** `data-v1-423414.test.cloud_facebook_hour_historical`
-- **Modo de escrita:** `WRITE_TRUNCATE` (sobrescreve os dados existentes)
+- **Modo de escrita:** `WRITE_APPEND` (adiciona novos dados, acumula histórico)
 
 ## ⚙️ Configuração
 
@@ -141,9 +142,9 @@ O script gera logs detalhados:
 
 ## ⚠️ Notas Importantes
 
-1. **Data de coleta:** O script coleta dados do dia atual (date_preset: "today")
+1. **Data de coleta:** O script coleta dados de ONTEM (date_preset: "yesterday")
 2. **Timezone:** Usa timezone de São Paulo (America/Sao_Paulo) para `imported_at`
-3. **Modo de escrita:** TRUNCATE (sobrescreve dados existentes na tabela)
+3. **Modo de escrita:** APPEND (adiciona novos dados, acumula histórico completo)
 4. **Tabela única:** Todos os grupos usam a mesma tabela `cloud_facebook_hour_historical`
 
 ## 🔍 Troubleshooting
@@ -186,7 +187,7 @@ CREATE TABLE `data-v1-423414.test.cloud_facebook_hour_historical` (
 
 1. **Credenciais GCP**: ✅ Configurado para usar secrets do GitHub via `SECRET_GOOGLE_SERVICE_ACCOUNT`
 2. **Workflow GitHub Actions**: ✅ Criado e configurado para rodar às 07h BRT
-3. **Modo de Escrita**: ✅ WRITE_TRUNCATE ativado
+3. **Modo de Escrita**: ✅ WRITE_APPEND ativado para acumular histórico
 4. **Processamento Assíncrono**: ✅ Otimizado para máxima performance
 5. **Tabela Única**: ✅ Todos os grupos usam `cloud_facebook_hour_historical`
 

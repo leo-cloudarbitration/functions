@@ -279,7 +279,7 @@ async def get_insights_async(session, account_id, access_token, after_cursor=Non
     base_url = f"https://graph.facebook.com/v22.0/{account_id}/insights"
     fields = "account_name,account_id,campaign_id,campaign_name,date_start,date_stop,impressions,spend,ctr"
     params = {
-        "date_preset": "today",
+        "date_preset": "yesterday",
         "fields": fields,
         "breakdowns": "hourly_stats_aggregated_by_advertiser_time_zone",
         "level": "campaign",
@@ -509,7 +509,7 @@ def upload_to_bigquery(df, table_id, chunk_size=5000):
     try:
         for i, chunk in enumerate(split_dataframe(df, chunk_size)):
             logger.info(f"Uploading chunk {i + 1} to BigQuery...")
-            job_config = bigquery.LoadJobConfig(write_disposition="WRITE_TRUNCATE")
+            job_config = bigquery.LoadJobConfig(write_disposition="WRITE_APPEND")
             job = client.load_table_from_dataframe(chunk, table_id, job_config=job_config)
             job.result()  # Wait for the job to complete
             logger.info(f"Chunk {i + 1} uploaded successfully.")
