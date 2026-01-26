@@ -1,0 +1,71 @@
+name: cloud_googleads_hour_historical
+
+on:
+  workflow_dispatch:  # Permite execução manual
+  schedule:
+    # Executa diariamente às 10:00 AM horário do Brasil (GMT-3) = 13:00 UTC
+    # Durante horário de verão (GMT-2) = 12:00 UTC, mas mantemos 13:00 UTC para consistência
+    - cron: "0 13 * * *"
+
+jobs:
+  collect-google-ads-historical-data:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: 📥 Checkout código
+        uses: actions/checkout@v4
+
+      - name: 🐍 Configurar Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: 'pip'  # Cache automático baseado em requirements.txt
+
+      - name: 📦 Instalar dependências
+        working-directory: google_ads/cloud_googleads_hour_historical
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          
+      - name: 🔍 Verificar versões instaladas
+        run: |
+          echo "=== Versões das bibliotecas principais ==="
+          python -c "
+          import pkg_resources
+          import grpc
+          import google.api_core
+          import google.cloud.bigquery
+          try:
+              ga_version = pkg_resources.get_distribution('google-ads').version
+              print(f'✅ google-ads: {ga_version}')
+          except:
+              print('⚠️ google-ads: versão não detectada')
+          print(f'✅ grpcio: {grpc.__version__}')
+          print(f'✅ google-api-core: {google.api_core.__version__}')
+          print(f'✅ google-cloud-bigquery: {google.cloud.bigquery.__version__}')
+          "
+          echo "=========================================="
+
+      - name: 🚀 Executar coleta de dados históricos (ontem)
+        working-directory: google_ads/cloud_googleads_hour_historical
+        env:
+          SECRET_GOOGLE_SERVICE_ACCOUNT: ${{ secrets.SECRET_GOOGLE_SERVICE_ACCOUNT }}
+          SECRET_GOOGLE_ADS_CONFIG: ${{ secrets.SECRET_GOOGLE_ADS_CONFIG }}
+          # Variáveis de ambiente para otimizar GRPC
+          GRPC_ENABLE_FORK_SUPPORT: "1"
+          GRPC_POLL_STRATEGY: "poll"
+          GRPC_PYTHON_LOG_LEVEL: "ERROR"
+        run: |
+          python main.py
+
+      - name: ✅ Resultado
+        if: success()
+        run: |
+          echo "🎉 Dados históricos (ontem) coletados e enviados ao BigQuery com sucesso!"
+          
+      - name: ❌ Tratamento de erro
+        if: failure()
+        run: |
+          echo "❌ Falha na coleta de dados históricos. Verifique os logs acima."
+          exit 1
+
