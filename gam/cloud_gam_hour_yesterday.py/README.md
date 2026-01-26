@@ -48,7 +48,7 @@ O script coleta métricas do GAM do **dia anterior** com breakdown por hora:
 
 **BigQuery Table:** `data-v1-423414.test.cloud_gam_hour_historical`
 
-**Modo de escrita**: `WRITE_TRUNCATE` - os dados são substituídos a cada execução
+**Modo de escrita**: `WRITE_APPEND` - os dados são acumulados na tabela, permitindo histórico completo
 
 ## ⚙️ Configuração
 
@@ -141,7 +141,7 @@ Todos os logs são exibidos durante a execução, incluindo:
 - [x] Configurar agendamento automático (10h BRT diariamente) ✅
 - [x] Configurar busca de dados do dia anterior ✅
 - [x] Implementar processamento assíncrono ✅
-- [x] Configurar WRITE_TRUNCATE para substituir dados ✅
+- [x] Configurar WRITE_APPEND para acumular histórico ✅
 - [ ] Mover API Key para secrets (opcional)
 - [ ] Documentar estrutura da tabela BigQuery (opcional)
 
