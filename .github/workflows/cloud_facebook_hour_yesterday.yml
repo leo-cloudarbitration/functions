@@ -2,7 +2,7 @@ name: cloud_facebook_hour_yesterday
 
 on:
   schedule:
-    - cron: "0 10 * * *"   # 07:00 BRT (GitHub usa UTC)
+    - cron: "0 13 * * *"   # 10:00 BRT (GMT-3) = 13:00 UTC
   workflow_dispatch: {}
 
 jobs:
