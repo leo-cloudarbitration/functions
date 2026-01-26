@@ -27,11 +27,22 @@ O script coleta métricas do GAM do **dia anterior** com breakdown por hora:
 
 ## 🚀 Sites Monitorados
 
+**Total: 14 sites**
+
 - **onplif.com** (Network ID: 23152058020)
 - **fintacle.com** (Network ID: 23152058020)
 - **amigadamamae.com.br** (Network ID: 23302708904)
 - **ifinane.com** (Network ID: 23313676084)
 - **finr.com.br** (Network ID: 23314451390)
+- **finanzco.com** (Network ID: 22958804404)
+- **espacoextra.com.br** (Network ID: 22958804404)
+- **vidadeproduto.com.br** (Network ID: 22958804404)
+- **tecnologianocampo.com.br** (Network ID: 22024304448)
+- **superinvestmentguide.com** (Network ID: 22024304448)
+- **brasileirinho.blog.br** (Network ID: 23150219615)
+- **bimviral.com** (Network ID: 23295671757)
+- **investimentoagora.com.br** (Network ID: 23123915180)
+- **vamosestudar.com.br** (Network ID: 23124049988)
 
 ## 📈 Destino dos Dados
 

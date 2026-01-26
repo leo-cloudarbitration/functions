@@ -21,7 +21,16 @@ GAM_SITES = [
     {"network_id": "23152058020", "site": "fintacle.com"},
     {"network_id": "23302708904", "site": "amigadamamae.com.br"},
     {"network_id": "23313676084", "site": "ifinane.com"},
-    {"network_id": "23314451390", "site": "finr.com.br"}
+    {"network_id": "23314451390", "site": "finr.com.br"},
+    {"network_id": "22958804404", "site": "finanzco.com"},
+    {"network_id": "22958804404", "site": "espacoextra.com.br"},
+    {"network_id": "22958804404", "site": "vidadeproduto.com.br"},
+    {"network_id": "22024304448", "site": "tecnologianocampo.com.br"},
+    {"network_id": "22024304448", "site": "superinvestmentguide.com"},
+    {"network_id": "23150219615", "site": "brasileirinho.blog.br"},
+    {"network_id": "23295671757", "site": "bimviral.com"},
+    {"network_id": "23123915180", "site": "investimentoagora.com.br"},
+    {"network_id": "23124049988", "site": "vamosestudar.com.br"}
 ]
 
 async def fetch_hourly_data_from_api_async(session, network_id, site_name):
