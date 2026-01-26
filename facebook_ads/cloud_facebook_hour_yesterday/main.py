@@ -76,33 +76,33 @@ def get_bigquery_client():
     try:
         # Opção 1: GitHub Actions Secret (SECRET_GOOGLE_SERVICE_ACCOUNT)
         credentials_json = os.getenv("SECRET_GOOGLE_SERVICE_ACCOUNT")
-    if credentials_json:
+        if credentials_json:
             logger.info("✅ Usando credenciais do SECRET_GOOGLE_SERVICE_ACCOUNT (GitHub Actions)")
-        credentials_info = json.loads(credentials_json)
-        credentials = service_account.Credentials.from_service_account_info(credentials_info)
-        return bigquery.Client(credentials=credentials)
-    
-    # Opção 2: Arquivo local (GOOGLE_APPLICATION_CREDENTIALS)
-    credentials_file = os.getenv("GOOGLE_APPLICATION_CREDENTIALS")
-    if credentials_file and os.path.exists(credentials_file):
-        logger.info(f"✅ Usando credenciais do arquivo: {credentials_file}")
-        with open(credentials_file, 'r') as f:
-            credentials_info = json.load(f)
-        credentials = service_account.Credentials.from_service_account_info(credentials_info)
-        return bigquery.Client(credentials=credentials)
-    
+            credentials_info = json.loads(credentials_json)
+            credentials = service_account.Credentials.from_service_account_info(credentials_info)
+            return bigquery.Client(credentials=credentials)
+        
+        # Opção 2: Arquivo local (GOOGLE_APPLICATION_CREDENTIALS)
+        credentials_file = os.getenv("GOOGLE_APPLICATION_CREDENTIALS")
+        if credentials_file and os.path.exists(credentials_file):
+            logger.info(f"✅ Usando credenciais do arquivo: {credentials_file}")
+            with open(credentials_file, 'r') as f:
+                credentials_info = json.load(f)
+            credentials = service_account.Credentials.from_service_account_info(credentials_info)
+            return bigquery.Client(credentials=credentials)
+        
         # Opção 3: Application Default Credentials (fallback)
         logger.info("✅ Usando Application Default Credentials")
         return bigquery.Client()
         
     except Exception as e:
         logger.error(f"❌ Erro ao configurar BigQuery client: {e}")
-    raise ValueError(
-        "❌ Nenhuma credencial encontrada!\n"
-        "Configure uma das opções:\n"
+        raise ValueError(
+            "❌ Nenhuma credencial encontrada!\n"
+            "Configure uma das opções:\n"
             "  - GitHub Actions: adicione o secret 'SECRET_GOOGLE_SERVICE_ACCOUNT'\n"
-        "  - Local: defina GOOGLE_APPLICATION_CREDENTIALS apontando para seu arquivo JSON"
-    )
+            "  - Local: defina GOOGLE_APPLICATION_CREDENTIALS apontando para seu arquivo JSON"
+        )
 
 # Inicializar cliente BigQuery
 try:
