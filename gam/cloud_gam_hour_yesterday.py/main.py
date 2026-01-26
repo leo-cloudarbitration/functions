@@ -55,46 +55,47 @@ async def fetch_hourly_data_from_api_async(session, network_id, site_name):
                 "AD_EXCHANGE_ACTIVE_VIEW_VIEWABLE_IMPRESSIONS_RATE"
             )
         }
-        print(f"URL gerada: {url}")
-        print(f"Parâmetros: {params}")
         
         async with session.get(url, headers=HEADERS, params=params) as response:
-            print(f"Status Code para {site_name}: {response.status}")
-            response_text = await response.text()
-            print(f"Resposta bruta para {site_name}: {response_text}")
             response.raise_for_status()
             data = (await response.json())["response"]
-            print(f"Dados retornados pela API para {site_name}: {data}")
-            return data
+            print(f"✓ Dados coletados para {site_name}: {len(data)} registros")
+            return (site_name, data)
     except Exception as e:
-        print(f"Erro ao buscar dados da API para {site_name}: {e}")
-        raise RuntimeError(f"Erro na API para {site_name}: {e}")
+        print(f"✗ Erro ao buscar dados da API para {site_name}: {e}")
+        return (site_name, None)
 
 async def fetch_all_sites_data_async():
     """
-    Busca dados de todos os sites de forma assíncrona.
+    Busca dados de todos os sites de forma assíncrona em paralelo.
     """
     async with aiohttp.ClientSession() as session:
-        tasks = []
-        for site_config in GAM_SITES:
-            network_id = site_config["network_id"]
-            site_name = site_config["site"]
-            print(f"Criando task para '{site_name}' (Network ID: {network_id})...")
-            task = fetch_hourly_data_from_api_async(session, network_id, site_name)
-            tasks.append((site_name, task))
+        # Cria todas as tasks em paralelo
+        tasks = [
+            fetch_hourly_data_from_api_async(
+                session, 
+                site_config["network_id"], 
+                site_config["site"]
+            )
+            for site_config in GAM_SITES
+        ]
         
-        results = []
-        for site_name, task in tasks:
-            try:
-                data = await task
-                results.append((site_name, data))
-                print(f"Dados coletados com sucesso para {site_name}")
-            except Exception as e:
-                print(f"Erro ao processar {site_name}: {e}")
-                # Continua com o próximo site mesmo se houver erro
+        # Executa todas as requisições em paralelo
+        print(f"Iniciando coleta de dados de {len(tasks)} sites em paralelo...")
+        results = await asyncio.gather(*tasks, return_exceptions=True)
+        
+        # Filtra apenas os resultados válidos (não None e não exceções)
+        valid_results = []
+        for result in results:
+            if isinstance(result, Exception):
+                print(f"✗ Exceção capturada: {result}")
                 continue
+            site_name, data = result
+            if data is not None:
+                valid_results.append((site_name, data))
         
-        return results
+        print(f"✓ Coleta concluída: {len(valid_results)}/{len(tasks)} sites processados com sucesso")
+        return valid_results
 
 def prepare_hourly_data(data, site_name):
     """
@@ -125,13 +126,13 @@ def prepare_hourly_data(data, site_name):
 
 def write_to_bigquery(data):
     """
-    Insere os dados no BigQuery no modo WRITE_TRUNCATE.
+    Insere os dados no BigQuery no modo WRITE_APPEND.
     """
     try:
         client = bigquery.Client()
         table_id = f"{PROJECT_ID}.{DATASET_ID}.{TABLE_ID}"
         job_config = bigquery.LoadJobConfig(
-            write_disposition=bigquery.WriteDisposition.WRITE_TRUNCATE,
+            write_disposition=bigquery.WriteDisposition.WRITE_APPEND,
             schema=[
                 bigquery.SchemaField("date", "DATE"),
                 bigquery.SchemaField("hour", "INT64"),
@@ -145,7 +146,6 @@ def write_to_bigquery(data):
                 bigquery.SchemaField("site_name", "STRING"),
             ]
         )
-        print(f"Linhas preparadas para inserção: {data}")
         job = client.load_table_from_json(data, table_id, job_config=job_config)
         job.result()
         print(f"{len(data)} registros inseridos com sucesso no BigQuery.")
