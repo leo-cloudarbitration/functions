@@ -1,0 +1,26 @@
+{
+  "_comment": "Este é um arquivo de exemplo. Copie para groups_config.json e configure seus tokens.",
+  "_instructions": "Para produção, use o GitHub Secret SECRET_FACEBOOK_GROUPS_CONFIG",
+  
+  "casf_a": {
+    "token": "SEU_TOKEN_AQUI",
+    "accounts": [
+      "act_2086793801756487",
+      "act_981724707176063"
+    ],
+    "account_names": [
+      "A 001",
+      "A 002"
+    ]
+  },
+  "casf_a_2": {
+    "token": "SEU_TOKEN_AQUI",
+    "accounts": [
+      "act_4004026033209415"
+    ],
+    "account_names": [
+      "A 003"
+    ]
+  }
+}
+

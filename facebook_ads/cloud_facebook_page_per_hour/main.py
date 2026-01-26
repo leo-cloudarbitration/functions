@@ -19,30 +19,39 @@ logger = logging.getLogger(__name__)
 # CONFIGURAÇÃO DA TABELA BIGQUERY (ÚNICA PARA TODOS OS GRUPOS)
 TABLE_ID = "data-v1-423414.test.cloud_facebook_page_per_hour"
 
-# CONFIGURAÇÃO DOS GRUPOS - Carregado de arquivo JSON externo compartilhado
+# CONFIGURAÇÃO DOS GRUPOS - Carregado de GitHub Secret ou arquivo JSON local
 def load_groups_config():
     """
-    Carrega a configuração de grupos do arquivo JSON compartilhado.
-    Procura 'groups_config.json' na pasta facebook_ads (um nível acima do script).
+    Carrega a configuração de grupos:
+    1. GitHub Secret (SECRET_FACEBOOK_GROUPS_CONFIG) - Produção/GitHub Actions
+    2. Arquivo local (facebook_ads/groups_config.json) - Desenvolvimento local
     """
-    script_dir = os.path.dirname(os.path.abspath(__file__))
-    # Sobe um nível (de cloud_facebook_page_per_hour para facebook_ads)
-    facebook_ads_dir = os.path.dirname(script_dir)
-    config_path = os.path.join(facebook_ads_dir, "groups_config.json")
-    
     try:
+        # Opção 1: GitHub Secret (produção)
+        secret_json = os.getenv("SECRET_FACEBOOK_GROUPS_CONFIG")
+        if secret_json:
+            logger.info("✅ Configuração de grupos carregada do SECRET_FACEBOOK_GROUPS_CONFIG (GitHub Secret)")
+            groups = json.loads(secret_json)
+            return groups
+        
+        # Opção 2: Arquivo local (desenvolvimento)
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        # Sobe um nível (de cloud_facebook_page_per_hour para facebook_ads)
+        facebook_ads_dir = os.path.dirname(script_dir)
+        config_path = os.path.join(facebook_ads_dir, "groups_config.json")
+        
         if os.path.exists(config_path):
             with open(config_path, 'r', encoding='utf-8') as f:
                 groups = json.load(f)
-            logger.info(f"✅ Configuração de grupos carregada de: {config_path}")
+            logger.info(f"✅ Configuração de grupos carregada de arquivo local: {config_path}")
             return groups
         else:
             logger.warning(f"⚠️ Arquivo de configuração não encontrado: {config_path}")
-            logger.warning("⚠️ Usando configuração vazia. Configure o arquivo groups_config.json")
+            logger.warning("⚠️ Configure SECRET_FACEBOOK_GROUPS_CONFIG ou o arquivo groups_config.json")
             return {}
+            
     except json.JSONDecodeError as e:
         logger.error(f"❌ Erro ao fazer parse do JSON: {e}")
-        logger.error(f"   Arquivo: {config_path}")
         raise
     except Exception as e:
         logger.error(f"❌ Erro ao carregar configuração de grupos: {e}")

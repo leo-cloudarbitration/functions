@@ -45,6 +45,7 @@ logs/
 # Credentials (por segurança)
 *.json
 !requirements*.txt
+!**/groups_config.example.json
 
 # Local development files with credentials
 activeview/local_*.py

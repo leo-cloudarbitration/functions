@@ -16,30 +16,39 @@ from concurrent.futures import ThreadPoolExecutor
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# CONFIGURAÇÃO DOS GRUPOS - Carregado de arquivo JSON externo compartilhado
+# CONFIGURAÇÃO DOS GRUPOS - Carregado de GitHub Secret ou arquivo JSON local
 def load_groups_config():
     """
-    Carrega a configuração de grupos do arquivo JSON compartilhado.
-    Procura 'groups_config.json' na pasta facebook_ads (um nível acima do script).
+    Carrega a configuração de grupos:
+    1. GitHub Secret (SECRET_FACEBOOK_GROUPS_CONFIG) - Produção/GitHub Actions
+    2. Arquivo local (facebook_ads/groups_config.json) - Desenvolvimento local
     """
-    script_dir = os.path.dirname(os.path.abspath(__file__))
-    # Sobe um nível (de cloud_facebook_hour_yesterday para facebook_ads)
-    facebook_ads_dir = os.path.dirname(script_dir)
-    config_path = os.path.join(facebook_ads_dir, "groups_config.json")
-    
     try:
+        # Opção 1: GitHub Secret (produção)
+        secret_json = os.getenv("SECRET_FACEBOOK_GROUPS_CONFIG")
+        if secret_json:
+            logger.info("✅ Configuração de grupos carregada do SECRET_FACEBOOK_GROUPS_CONFIG (GitHub Secret)")
+            groups = json.loads(secret_json)
+            return groups
+        
+        # Opção 2: Arquivo local (desenvolvimento)
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        # Sobe um nível (de cloud_facebook_hour_yesterday para facebook_ads)
+        facebook_ads_dir = os.path.dirname(script_dir)
+        config_path = os.path.join(facebook_ads_dir, "groups_config.json")
+        
         if os.path.exists(config_path):
             with open(config_path, 'r', encoding='utf-8') as f:
                 groups = json.load(f)
-            logger.info(f"✅ Configuração de grupos carregada de: {config_path}")
+            logger.info(f"✅ Configuração de grupos carregada de arquivo local: {config_path}")
             return groups
         else:
             logger.warning(f"⚠️ Arquivo de configuração não encontrado: {config_path}")
-            logger.warning("⚠️ Usando configuração vazia. Configure o arquivo facebook_ads/groups_config.json")
+            logger.warning("⚠️ Configure SECRET_FACEBOOK_GROUPS_CONFIG ou o arquivo groups_config.json")
             return {}
+            
     except json.JSONDecodeError as e:
         logger.error(f"❌ Erro ao fazer parse do JSON: {e}")
-        logger.error(f"   Arquivo: {config_path}")
         raise
     except Exception as e:
         logger.error(f"❌ Erro ao carregar configuração de grupos: {e}")
@@ -67,33 +76,33 @@ def get_bigquery_client():
     try:
         # Opção 1: GitHub Actions Secret (SECRET_GOOGLE_SERVICE_ACCOUNT)
         credentials_json = os.getenv("SECRET_GOOGLE_SERVICE_ACCOUNT")
-        if credentials_json:
+    if credentials_json:
             logger.info("✅ Usando credenciais do SECRET_GOOGLE_SERVICE_ACCOUNT (GitHub Actions)")
-            credentials_info = json.loads(credentials_json)
-            credentials = service_account.Credentials.from_service_account_info(credentials_info)
-            return bigquery.Client(credentials=credentials)
-        
-        # Opção 2: Arquivo local (GOOGLE_APPLICATION_CREDENTIALS)
-        credentials_file = os.getenv("GOOGLE_APPLICATION_CREDENTIALS")
-        if credentials_file and os.path.exists(credentials_file):
-            logger.info(f"✅ Usando credenciais do arquivo: {credentials_file}")
-            with open(credentials_file, 'r') as f:
-                credentials_info = json.load(f)
-            credentials = service_account.Credentials.from_service_account_info(credentials_info)
-            return bigquery.Client(credentials=credentials)
-        
+        credentials_info = json.loads(credentials_json)
+        credentials = service_account.Credentials.from_service_account_info(credentials_info)
+        return bigquery.Client(credentials=credentials)
+    
+    # Opção 2: Arquivo local (GOOGLE_APPLICATION_CREDENTIALS)
+    credentials_file = os.getenv("GOOGLE_APPLICATION_CREDENTIALS")
+    if credentials_file and os.path.exists(credentials_file):
+        logger.info(f"✅ Usando credenciais do arquivo: {credentials_file}")
+        with open(credentials_file, 'r') as f:
+            credentials_info = json.load(f)
+        credentials = service_account.Credentials.from_service_account_info(credentials_info)
+        return bigquery.Client(credentials=credentials)
+    
         # Opção 3: Application Default Credentials (fallback)
         logger.info("✅ Usando Application Default Credentials")
         return bigquery.Client()
         
     except Exception as e:
         logger.error(f"❌ Erro ao configurar BigQuery client: {e}")
-        raise ValueError(
-            "❌ Nenhuma credencial encontrada!\n"
-            "Configure uma das opções:\n"
+    raise ValueError(
+        "❌ Nenhuma credencial encontrada!\n"
+        "Configure uma das opções:\n"
             "  - GitHub Actions: adicione o secret 'SECRET_GOOGLE_SERVICE_ACCOUNT'\n"
-            "  - Local: defina GOOGLE_APPLICATION_CREDENTIALS apontando para seu arquivo JSON"
-        )
+        "  - Local: defina GOOGLE_APPLICATION_CREDENTIALS apontando para seu arquivo JSON"
+    )
 
 # Inicializar cliente BigQuery
 try:

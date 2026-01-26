@@ -34,5 +34,6 @@ jobs:
       - name: Run script
         env:
           SECRET_GOOGLE_SERVICE_ACCOUNT: ${{ secrets.SECRET_GOOGLE_SERVICE_ACCOUNT }}
+          SECRET_FACEBOOK_GROUPS_CONFIG: ${{ secrets.SECRET_FACEBOOK_GROUPS_CONFIG }}
         run: python main.py
 
