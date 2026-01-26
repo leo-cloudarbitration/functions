@@ -16,194 +16,36 @@ from concurrent.futures import ThreadPoolExecutor
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# CONFIGURAÇÃO DOS GRUPOS - ESTRUTURA COMPLETA
-GROUPS = {
-    "casf_a": {
-        "token": "EAASZBzOX0YzUBP2Io7Qj5KkSTewdSdgZBarOUqV25wW8bY428sXOLN7nftC7t6UvMvuyN30CHODtgaZBP67Nni3uIaXySsZAfAl25t5bfZBXMRVsG2ZC4SLLZADZC04IsAmrWiW1BrV0kEw281oAZAOYeu5A2f9dS8kRRZAnTpgumZCJnbJZAWMGoPZCZBVZBh6Pe8zyZAyoMgZDZD",
-        "accounts": [
-            "act_2086793801756487",  # A 001
-            "act_981724707176063",   # A 002
-            "act_1336438444153855",  # A 004
-            "act_1391292178903463",  # A 006
-            "act_1299109444484986",  # A 007
-            "act_1031835115731749",  # CASF A - 021
-            "act_1452046959544076",  # CASF A - 022
-        ]
-    }, 
-
-    "casf_a_2": {
-        "token": "EAASZBzOX0YzUBP5sBgBYlA9vhVnZBO1W3oQjAiLQlMxRUqto6zjZBtvNbrO12PUndFqi5GDR0Sr8xyoG1yLzwbN1dGA7mrL5CO3DhfJOb527bi1NcDWwSRGFPF1um4mre0XB5wa2zXiISSV8vkrda93h3ZA21TO4WoybnAAuLXmZBGYoazfGYW0hsjtJ8PFzhgAZDZD",
-        "accounts": [
-            "act_4004026033209415",  # A 003
-            "act_517255721392274",   # A 005
-            "act_671403681969823",   # A 008
-            "act_1651254315530600",  # A 009
-            "act_1673050973599968",  # A 010
-            "act_1263612182017570",  # CASF A - 023
-            "act_1474738367239405",  # CASF A - 024
-            "act_1412982356688062",  # CASF A - 025
-        ]
-    },       
-
-    "casf_b": {
-        "token": "EAASZBzOX0YzUBP8tkZCg0WGE5dobFuhAMzMFlKllEwNgn741p2tS1rb5u7tPhrQciZBhg8h4La7pXIajhMpZCBcVuO6iFhZAoFHSQvJyx5VYw9AfbWFRkYo2n8QmZBZBo9zD4nzGD7qUkWNF3aw1ZCwwoykPH9IyUUQ6hfS2A5wYqwzmst7Giicc2iJijl7pWsEzxIGef0oX",
-        "accounts": [
-            "act_1346308366549889",  # B 001
-            "act_1370098907466943",  # B 003
-            "act_606104969244156",   # B 004
-            "act_1068778325288092",  # B 005
-            "act_625690570258598",   # B 007
-            "act_1200321581769557",  # B 009
-            "act_1337378787572363",  # B 010
-            "act_974681131291021",   # CASF B - 011
-            "act_1378638580101069",  # CASF B - 012
-            "act_1761670824725907",  # CASF B - 013
-            "act_1772051913713580",  # CASF B - 014
-            "act_1072725700887714",  # CASF B - 015
-            "act_1471023010727298",  # CASF B - 016
-            "act_695055153401445",   # CASF B - 017
-            "act_1057740166376634",  # CASF B - 018
-            "act_1455601052101135",  # CASF B - 019
-            "act_622738277534907",   # CASF B - 020
-            "act_574063968902469",   # CASF B - 021
-            "act_1394320888505693",  # CASF B - 022
-            "act_1433314247709835",  # CASF B - 023
-            "act_2288442174883294",  # CASF B - 024
-        ]
-    },        
-
-    "casf_b_2": {
-        "token": "EAASZBzOX0YzUBPxTYvJSVzlZC9EtZBGX1qxhTasbsHzaRxG0HtEG1l0Op0hMXZBjx2OBbFCkcY1uD7UJIbNfBlukDx1DO3C0otwD2aQt8f2zg0HZAfSSxLPYDCL0TG1YUckSuOWvYNhbf82KdIc38EXV0LV6Ot5bpZByVvWhY9ZBhSJsFBKDyrLx2PH2LJmqipI3FKsjTil",
-        "accounts": [
-            "act_1346308366549889",  # B 001
-            "act_955177216218047",  # B 002
-            "act_517874211015842",   # B 006
-            "act_1797415574539841",  # CASF B - 025
-            "act_717862000867606",   # CASF B - 026
-            "act_770019508926452",   # CASF B - 027
-            "act_796006246705409",   # CASF B - 028
-            "act_992601502899291",   # CASF B - 029
-            "act_1312677630226374",  # CASF B - 030
-            "act_1259041578841388",  # CASF B - 031
-            "act_1121606749849488",  # CASF B - 032
-            "act_1915342352364684",  # CASF B - 033
-            "act_3192500777579255",  # CASF B - 034
-        ]
-    },   
-
-    "casf_c": {
-        "token": "EAASZBzOX0YzUBPyLQMKvclgQoFkkybpz5dDzSEdbYhpIaYY1YkXSWtqDZBZCZCa8ZAWWDpzASvDRqwQvpit8ZBSK3CzGHALHaoh4mD1xft5TH3LqFNkjZBOViZCZCZBUEDKu4JDo7mIJ0ZCGpFSRcR1SKvW9KG7e9V9AfhvMtRFZCu1FzZBj761K82xXaw9wZA7clhzJIOsJgJ8wL1",
-        "accounts": [
-            "act_1032538255591656",  # C 006
-            "act_4151573991833128",  # CASF C - 018
-            "act_1066574724914885",  # CASF C - 020
-            "act_1392970961753541",  # CASF C - 021
-            "act_1150534793775622",  # CASF C - 022
-            "act_2653324861542109",  # CASF C - 023
-            "act_1892401481539404",  # CASF C - 024
-            "act_10026762610765790", # CASF C - 025
-            "act_1271027548048483",  # CASF C - 026
-            "act_4338176139795210",  # CASF C - 028
-            "act_1454996898848132",  # CASF C - 029
-            "act_709652395012874",   # CASF C - 030
-            "act_3012814918876991",  # CASF C - 031
-            "act_705327572107397",   # CASF C - 032
-            "act_1030061175965269",  # CASF C - 042
-            "act_1235931794248240",  # CASF C - 043
-            "act_1018444543789280",  # CASF C - 044
-            "act_1109560931044202",  # CASF C - 045
-        ]
-    },
+# CONFIGURAÇÃO DOS GRUPOS - Carregado de arquivo JSON externo compartilhado
+def load_groups_config():
+    """
+    Carrega a configuração de grupos do arquivo JSON compartilhado.
+    Procura 'groups_config.json' na pasta facebook_ads (um nível acima do script).
+    """
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    # Sobe um nível (de cloud_facebook_hour_yesterday para facebook_ads)
+    facebook_ads_dir = os.path.dirname(script_dir)
+    config_path = os.path.join(facebook_ads_dir, "groups_config.json")
     
-    "casf_c_2": {
-        "token": "EAASZBzOX0YzUBPyAB1MQylCljnXuWEZBZBRD8c08jKq1FJNwAqBGlq2MPXAy1cuSVVcQJqjttdqunsVCZBF96N3LrNvYsuwSSSlrZBlZAaIeN8xx1zdUZAzqoo7qoDRjr2ZAqJ4ZBiidZCG7WmzqnVBPTQgafd9gADc5xZCN7olMR1lUXZAQ2m0IY2qyuBuXa7gXniW2o4TZAYpsZC",
-        "accounts": [
-            "act_1584150448951619",  # C 007
-            "act_1749850525573536",  # C 008
-            "act_681898871185195",   # C 009
-            "act_536441699129952",   # C 010
-            "act_1953684948703370",  # C 011
-            "act_1664780364223146",  # C 012
-            "act_3086929154792389",  # C 013
-            "act_1054819642836727",  # C 014
-            "act_720259200649418",   # C 015
-            "act_752173674044463",   # C 016
-            "act_923457749913500",   # CASF C - 017
-            "act_3039326342887144",  # CASF C - 033
-            "act_2988355044704974",  # CASF C - 034
-            "act_2199444827150117",  # CASF C - 035
-            "act_947568777447505",   # CASF C - 036
-            "act_740142858498998",   # CASF C - 037
-        ]
-    },
+    try:
+        if os.path.exists(config_path):
+            with open(config_path, 'r', encoding='utf-8') as f:
+                groups = json.load(f)
+            logger.info(f"✅ Configuração de grupos carregada de: {config_path}")
+            return groups
+        else:
+            logger.warning(f"⚠️ Arquivo de configuração não encontrado: {config_path}")
+            logger.warning("⚠️ Usando configuração vazia. Configure o arquivo facebook_ads/groups_config.json")
+            return {}
+    except json.JSONDecodeError as e:
+        logger.error(f"❌ Erro ao fazer parse do JSON: {e}")
+        logger.error(f"   Arquivo: {config_path}")
+        raise
+    except Exception as e:
+        logger.error(f"❌ Erro ao carregar configuração de grupos: {e}")
+        raise
 
-    "casf_c_3": {
-        "token": "EAASZBzOX0YzUBP71gRyC7bWDNCpps0eN0TXFAKNZCZB3z8TW7TzXLc1ZBhBSqpk4Ry6pjb58XPkBMU48nXUcZA8FHgHfm8q5ZCXKIi4ZA6xiZAcreHesRct13ndClM3ucvFyNtnDenkuxFLykEVkfsRtmg2bL7nSzG4DHGNa3jVpCovnBIvzj4DIg4Ihk371CmZAyZCeZClSkrw",
-        "accounts": [
-            "act_3938176226452279",  # C 001
-            "act_3983890891844511",  # C 002
-            "act_1080376004101758",  # C 003
-            "act_1733528333951100",  # CASF C - 038
-            "act_1464456568314306",  # CASF C - 039
-            "act_1724766664815078",  # CASF C - 040
-            "act_1045985000997960",  # CASF C - 041
-        ]
-    },
-
-    "cloudarbitration": {
-        "token": "EAALBhI66tYsBO7sZCaopQMDlbWZCBjK42JuNUdvrVQZAmdZBZBLA7I6Eh364Tjo2S7uBbn6sn0zZAsyXCD0b3iDUf4ki9CZAL0ZAkN2ZBeVabl7gP5tTLYNWSUCJNBgIEriRS1ZA2MhjHhZCsYHo3vFKKIQdiqxdHZBzwOvxI4XW039iLBhhSr7DoR2ksr1MJ9FoP09jD",
-        "accounts": [
-            'act_1408181320053598',#Cloud 002
-            'act_2400057770189729',#Cloud 009
-            'act_678596297812481', #Cloud 005
-        ]
-    },
-    
-    "cloudarbitration_2": {
-        "token": "EAALBhI66tYsBPzjsV3pZCna4zpZBilE05elpmXAdtZAb8UgcryTvp7ws5aWFFhyZAyzo1Wz02uBDntf36GAFiE8hJoc3ZCj9nUPH2l8ySSlqZBj7bSvNDxQWpF0ufQbvWN7ajEcXXhOUk9BeRbghHN6GPOmPo1O83hP3pBREF3ZAWRQ90yxVcZBi4SA87HIZCqZC77bwZDZD",
-        "accounts": [
-            'act_901745041151181', #Cloud 003
-            'act_384373767863365', #Cloud 006
-            'act_341062168314061', #Cloud 007
-            'act_1609550796495814', #Cloud 008
-            'act_1727835544421228',#Cloud 010
-        ]
-    },
-    
-    "cloudarbitration_3": {
-        "token": "EAAQHDrkrpocBP98Fh68zaIU8FTjGaERnCq5bxVE7ZBZBdT0AJCCG9zm6xJkDu0JXQNPDcr9LOX68WglAeXjYyP5TguEw7sXE6pHIvmvznJvVKxHuApMPhUwYRcQyHtCoWkIqTlZBBKexGXhCqPGM5cyBFR73E4bUZC4lBVNMulTolhep7Q0Aegk6Jg16zB9d4wZDZD",
-        "accounts": [
-            'act_336914685607657',#Cloud 004
-        ]
-    },
-
-    "caag_a": {
-        "token": "EAAaHkg81HaQBPAD97uZChFeLcZBUogRVjyUhqa0pXVmPfOgXW5r8O4JAb8HkwQPdz3DOEaE4oXJtWDg9ZBe4DZAbKrfZCxQv9sdUTv1zqS2JFNm63dRyZAuZByOZAZAkmd2IpBJ2afIj2JevKZAGI8AkdZBb2aMdPGiaO072K8OxVD94fl2Q0HT6zN2xhPzq7aZCYzSSHAZDZD",
-        "accounts": [
-            'act_1385339079505837', # CAAG A 001
-            'act_618898480729472', # CAAG A 002
-            'act_586870314267963', # CAAG A 003
-            'act_671266691936018', # CAAG A 004
-            'act_10001478916622937' # CAAG A 005
-        ]
-    },
-    
-    "caag_b": {
-        "token": "EAAYq23wDZCIwBPiyFZA8K62w4WXO5VeATZBZCmZChOotxjRQicDrssBa0ZBzXknPOULfUcXZAZCM67ikBxs3ZBoVToYdpWWVkPQfahXKSW17dvS4ZBLq63lyLWm5dgLZCAJObRueXeo2IVbY0gwtHEuz3SV80qcvoOG5QgZBZBTvT6ZAhmZCIzI6ZC8s2pNkZChLjMZBCeHu8bxQZDZD",
-        "accounts": [
-            'act_756342057114932', # CAAG B 001
-        ]
-    },
-    
-     "nassovia_a": {
-        "token": "EAALbQS6qEcIBPnaXZByqQQqFQMMMGNXRPX7xaG882COyVzb3RrKHrSOB1vDD2T29WHmUszByI50zlBUu8rEgz1F5Mq4eZAbzPJ42t6keTV049fDoH9mNjg9XB4oZAwJhZBVJ3uWcIWqRxFi4IXe9FjzrnuD9MduwOhveNPl4R7ebqsZCGr3htNjDWqZAFtTNKizAZDZD",
-        "accounts": [
-          "act_1294299965610280",  # Nassovia A 001
-          "act_1230275922480187",  # Nassovia A 002
-          "act_1155530230051923",  # Nassovia A 003
-        ]
-    }
-}
+GROUPS = load_groups_config()
 
 # Configurações de paralelismo
 MAX_WORKERS = 15
