@@ -1,0 +1,54 @@
+name: cloud_facebook_today
+
+on:
+  schedule:
+    # Executa a cada hora no minuto 58 (em UTC)
+    # Exemplo: 00:58 UTC, 01:58 UTC, 02:58 UTC, etc.
+    - cron: "58 * * * *"
+  workflow_dispatch: {}  # Permite execução manual
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: facebook_ads/cloud_facebook_today
+
+    steps:
+      - name: 📥 Checkout código
+        uses: actions/checkout@v4
+
+      - name: 🐍 Configurar Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: 'pip'
+
+      - name: 📦 Instalar dependências
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: 🔐 Autenticar no Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.SECRET_GOOGLE_SERVICE_ACCOUNT }}
+
+      - name: 🚀 Executar coleta de dados de hoje
+        env:
+          SECRET_FACEBOOK_GROUPS_CONFIG: ${{ secrets.SECRET_FACEBOOK_GROUPS_CONFIG }}
+          SECRET_GOOGLE_SERVICE_ACCOUNT: ${{ secrets.SECRET_GOOGLE_SERVICE_ACCOUNT }}
+        run: |
+          python main.py
+
+      - name: ✅ Resultado
+        if: success()
+        run: |
+          echo "🎉 Dados de hoje coletados e enviados ao BigQuery com sucesso!"
+
+      - name: ❌ Tratamento de erro
+        if: failure()
+        run: |
+          echo "❌ Falha na coleta de dados de hoje. Verifique os logs acima."
+          exit 1
+
