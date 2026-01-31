@@ -358,12 +358,17 @@ def upload_to_bigquery(df, table_id, chunk_size=5000):
         return
 
     try:
-        for i, chunk in enumerate(split_dataframe(df, chunk_size)):
-            logger.info(f"Uploading chunk {i + 1} to BigQuery...")
-            job_config = bigquery.LoadJobConfig(write_disposition="WRITE_APPEND")
+        chunks = list(split_dataframe(df, chunk_size))
+        total_chunks = len(chunks)
+        
+        for i, chunk in enumerate(chunks):
+            logger.info(f"Uploading chunk {i + 1}/{total_chunks} to BigQuery...")
+            # Primeiro chunk usa TRUNCATE, os demais usam APPEND
+            write_disposition = "WRITE_TRUNCATE" if i == 0 else "WRITE_APPEND"
+            job_config = bigquery.LoadJobConfig(write_disposition=write_disposition)
             job = client.load_table_from_dataframe(chunk, table_id, job_config=job_config)
             job.result()  # Wait for the job to complete
-            logger.info(f"Chunk {i + 1} uploaded successfully.")
+            logger.info(f"Chunk {i + 1}/{total_chunks} uploaded successfully.")
     except Exception as e:
         logger.error(f"Error uploading to BigQuery: {e}")
 
