@@ -15,6 +15,10 @@ WORKSHEET = os.getenv("WORKSHEET", "adxfee")  # troque se a aba tiver outro nome
 BIGQUERY_TABLE = os.getenv("BIGQUERY_TABLE", "data-v1-423414.test.sheets_adxfee")
 PROJECT_ID = os.getenv("GOOGLE_CLOUD_PROJECT", "data-v1-423414")
 
+# Validar SHEET_ID
+if not SHEET_ID or SHEET_ID == "":
+    raise ValueError("❌ SHEET_ID não configurado! Configure a variável de ambiente SHEET_ID ou o secret no GitHub Actions.")
+
 def get_service_account_credentials():
     """Carrega credenciais da service account via GitHub Actions ou arquivo local."""
     scopes = [
@@ -53,13 +57,46 @@ def get_service_account_credentials():
 def get_google_sheet_data(credentials):
     """Lê dados do Google Sheets usando gspread."""
     import gspread
+    from gspread.exceptions import SpreadsheetNotFound, APIError
 
-    logger.info("Accessing Google Sheets...")
-    client = gspread.authorize(credentials)
-    ws = client.open_by_key(SHEET_ID).worksheet(WORKSHEET)
-    rows = ws.get_all_records()
-    logger.info(f"Sheet '{WORKSHEET}' @ {SHEET_ID}: {len(rows)} rows")
-    return rows
+    logger.info(f"📊 Acessando Google Sheets...")
+    logger.info(f"   Sheet ID: {SHEET_ID}")
+    logger.info(f"   Worksheet: {WORKSHEET}")
+    
+    try:
+        client = gspread.authorize(credentials)
+        logger.info("✅ Cliente gspread autorizado com sucesso")
+        
+        try:
+            spreadsheet = client.open_by_key(SHEET_ID)
+            logger.info(f"✅ Planilha encontrada: {spreadsheet.title}")
+        except SpreadsheetNotFound:
+            logger.error(f"❌ Planilha não encontrada! Sheet ID: {SHEET_ID}")
+            logger.error("   Verifique se:")
+            logger.error("   1. O SHEET_ID está correto")
+            logger.error("   2. A Service Account tem acesso à planilha")
+            logger.error("   3. A planilha não foi deletada ou movida")
+            raise
+        except APIError as e:
+            logger.error(f"❌ Erro da API do Google Sheets: {e}")
+            logger.error("   Verifique se a Service Account tem as permissões necessárias")
+            raise
+        
+        try:
+            ws = spreadsheet.worksheet(WORKSHEET)
+            logger.info(f"✅ Aba '{WORKSHEET}' encontrada")
+        except Exception as e:
+            logger.error(f"❌ Aba '{WORKSHEET}' não encontrada na planilha!")
+            logger.error(f"   Erro: {e}")
+            logger.error("   Verifique se o nome da aba está correto")
+            raise
+        
+        rows = ws.get_all_records()
+        logger.info(f"✅ Sheet '{WORKSHEET}' @ {SHEET_ID}: {len(rows)} linhas obtidas")
+        return rows
+    except Exception as e:
+        logger.error(f"❌ Erro ao acessar Google Sheets: {e}")
+        raise
 
 
 def coerce_types(df: pd.DataFrame) -> pd.DataFrame:
@@ -141,6 +178,12 @@ def main():
     """Função principal para execução local ou GitHub Actions."""
     try:
         logger.info("🚀 Iniciando coleta de dados do Google Sheets...")
+        logger.info(f"📋 Configuração:")
+        logger.info(f"   SHEET_ID: {SHEET_ID}")
+        logger.info(f"   WORKSHEET: {WORKSHEET}")
+        logger.info(f"   BIGQUERY_TABLE: {BIGQUERY_TABLE}")
+        logger.info(f"   PROJECT_ID: {PROJECT_ID}")
+        
         creds = get_service_account_credentials()
         rows = get_google_sheet_data(creds)
 
