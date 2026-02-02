@@ -15,10 +15,6 @@ WORKSHEET = os.getenv("WORKSHEET", "adxfee")  # troque se a aba tiver outro nome
 BIGQUERY_TABLE = os.getenv("BIGQUERY_TABLE", "data-v1-423414.test.sheets_adxfee")
 PROJECT_ID = os.getenv("GOOGLE_CLOUD_PROJECT", "data-v1-423414")
 
-# Validar SHEET_ID
-if not SHEET_ID or SHEET_ID == "":
-    raise ValueError("❌ SHEET_ID não configurado! Configure a variável de ambiente SHEET_ID ou o secret no GitHub Actions.")
-
 def get_service_account_credentials():
     """Carrega credenciais da service account via GitHub Actions ou arquivo local."""
     scopes = [

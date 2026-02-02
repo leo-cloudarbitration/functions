@@ -37,9 +37,6 @@ jobs:
       - name: 🚀 Executar sincronização Google Sheets → BigQuery
         env:
           SECRET_GOOGLE_SERVICE_ACCOUNT: ${{ secrets.SECRET_GOOGLE_SERVICE_ACCOUNT }}
-          SHEET_ID: ${{ secrets.SHEET_ID }}
-          WORKSHEET: ${{ secrets.WORKSHEET }}
-          BIGQUERY_TABLE: ${{ secrets.BIGQUERY_TABLE }}
         run: |
           python main.py
 
