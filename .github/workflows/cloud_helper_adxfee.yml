@@ -1,0 +1,56 @@
+name: cloud_helper_adxfee
+
+on:
+  schedule:
+    # Executa todo dia às 5:10 BRT (08:10 UTC)
+    # Considerando horário padrão (GMT-3)
+    - cron: "10 8 * * *"
+  workflow_dispatch: {}  # Permite execução manual
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: helper/cloud_helper_adxfee
+
+    steps:
+      - name: 📥 Checkout código
+        uses: actions/checkout@v4
+
+      - name: 🐍 Configurar Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: 'pip'
+
+      - name: 📦 Instalar dependências
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: 🔐 Autenticar no Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.SECRET_GOOGLE_SERVICE_ACCOUNT }}
+
+      - name: 🚀 Executar sincronização Google Sheets → BigQuery
+        env:
+          SECRET_GOOGLE_SERVICE_ACCOUNT: ${{ secrets.SECRET_GOOGLE_SERVICE_ACCOUNT }}
+          SHEET_ID: ${{ secrets.SHEET_ID }}
+          WORKSHEET: ${{ secrets.WORKSHEET }}
+          BIGQUERY_TABLE: ${{ secrets.BIGQUERY_TABLE }}
+        run: |
+          python main.py
+
+      - name: ✅ Resultado
+        if: success()
+        run: |
+          echo "🎉 Dados do Google Sheets sincronizados com BigQuery com sucesso!"
+
+      - name: ❌ Tratamento de erro
+        if: failure()
+        run: |
+          echo "❌ Falha na sincronização. Verifique os logs acima."
+          exit 1
+
