@@ -687,16 +687,24 @@ def consolidate_and_upload_by_table(results: list):
 # ------------------------------------------------------------------------------
 # BIGQUERY
 # ------------------------------------------------------------------------------
-# Carregar GOOGLE_CREDENTIALS de credentials.json
-GOOGLE_CREDENTIALS = load_config_from_json(
-    json_path=os.path.join(os.path.dirname(__file__), "..", "credentials.json"),
-    config_name="GOOGLE_CREDENTIALS"
-)
-
+# Carregar GOOGLE_CREDENTIALS de credentials.json ou variável de ambiente
 try:
-    creds = service_account.Credentials.from_service_account_info(GOOGLE_CREDENTIALS)
-    bq_client = bigquery.Client(credentials=creds)
-    logger.info("BigQuery client configurado com sucesso!")
+    # Tentar carregar de variável de ambiente SECRET_GOOGLE_SERVICE_ACCOUNT
+    google_creds_env = os.getenv("SECRET_GOOGLE_SERVICE_ACCOUNT")
+    if google_creds_env:
+        GOOGLE_CREDENTIALS = json.loads(google_creds_env)
+        creds = service_account.Credentials.from_service_account_info(GOOGLE_CREDENTIALS)
+        bq_client = bigquery.Client(credentials=creds)
+        logger.info("BigQuery client configurado usando SECRET_GOOGLE_SERVICE_ACCOUNT!")
+    else:
+        # Fallback para arquivo local (desenvolvimento)
+        GOOGLE_CREDENTIALS = load_config_from_json(
+            json_path=os.path.join(os.path.dirname(__file__), "..", "credentials.json"),
+            config_name="GOOGLE_CREDENTIALS"
+        )
+        creds = service_account.Credentials.from_service_account_info(GOOGLE_CREDENTIALS)
+        bq_client = bigquery.Client(credentials=creds)
+        logger.info("BigQuery client configurado usando credentials.json!")
 except Exception as e:
     logger.error("Erro ao configurar BigQuery client: %s", str(e))
     bq_client = None
