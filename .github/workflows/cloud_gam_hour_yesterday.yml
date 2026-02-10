@@ -7,7 +7,7 @@ on:
 
 jobs:
   run:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux, x64]
     defaults:
       run:
         working-directory: gam/cloud_gam_hour_yesterday.py

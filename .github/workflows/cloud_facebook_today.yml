@@ -11,7 +11,7 @@ on:
 
 jobs:
   run:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux, x64]
     defaults:
       run:
         working-directory: facebook_ads/cloud_facebook_today
