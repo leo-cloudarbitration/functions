@@ -202,7 +202,7 @@ def get_insights_page(account_id: str, token: str, after: str | None = None, is_
     day_before_yesterday = now - timedelta(days=2)
     date_str = day_before_yesterday.strftime("%Y-%m-%d")
     
-    url = f"https://graph.facebook.com/v22.0/{account_id}/insights"
+    url = f"https://graph.facebook.com/v24.0/{account_id}/insights"
     
     # Escolher campos baseado na conta
     if account_id in PROBLEMATIC_ACCOUNTS:
@@ -278,7 +278,7 @@ def fetch_insights_all_accounts(accounts: list, token: str, is_lifetime: bool = 
 
 # ---------- BUDGETS -----------------------------------------------------------
 def get_campaign_budgets(account_id: str, token: str):
-    url = f"https://graph.facebook.com/v22.0/{account_id}/campaigns"
+    url = f"https://graph.facebook.com/v24.0/{account_id}/campaigns"
     params = {
         "access_token": token,
         "fields": "id,name,daily_budget,lifetime_budget,stop_time,status",
@@ -289,7 +289,7 @@ def get_campaign_budgets(account_id: str, token: str):
 
 
 def get_adset_budgets(account_id: str, token: str):
-    url = f"https://graph.facebook.com/v22.0/{account_id}/adsets"
+    url = f"https://graph.facebook.com/v24.0/{account_id}/adsets"
     params = {
         "access_token": token,
         "fields": "id,name,campaign_id,daily_budget",
@@ -506,7 +506,7 @@ def verify_account_access(accounts: list, token: str, group_name: str):
     # Verificar se o token é válido testando uma conta
     if accounts:
         test_account = accounts[0]
-        url = f"https://graph.facebook.com/v22.0/{test_account}"
+        url = f"https://graph.facebook.com/v24.0/{test_account}"
         params = {"access_token": token, "fields": "id,name"}
         
         resp = requests.get(url, params=params, timeout=30)
@@ -526,7 +526,7 @@ def verify_account_access(accounts: list, token: str, group_name: str):
     inaccessible_accounts = []
     
     for account in accounts:
-        url = f"https://graph.facebook.com/v22.0/{account}"
+        url = f"https://graph.facebook.com/v24.0/{account}"
         params = {"access_token": token, "fields": "id,name"}
         
         resp = requests.get(url, params=params, timeout=30)

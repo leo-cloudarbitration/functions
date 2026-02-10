@@ -362,7 +362,7 @@ def get_ads_insights_page(account_id: str, token: str, after: str | None = None,
     import pytz
     tz = pytz.timezone("America/Sao_Paulo")
     now = datetime.now(tz)
-    url = f"https://graph.facebook.com/v22.0/{account_id}/insights"
+    url = f"https://graph.facebook.com/v24.0/{account_id}/insights"
     
     params = {
         "access_token": token,
@@ -434,7 +434,7 @@ def is_dynamic_creative_campaign(campaign_id: str, token: str) -> bool:
     """Detecta se uma campanha usa criativos dinâmicos verificando apenas o primeiro creative."""
     try:
         # Buscar apenas alguns anúncios da campanha para análise rápida
-        url = f"https://graph.facebook.com/v22.0/{campaign_id}/ads"
+        url = f"https://graph.facebook.com/v24.0/{campaign_id}/ads"
         params = {"access_token": token, "fields": "id,name,creative", "limit": 5}  # Apenas 5 anúncios
         
         data = fb_get(url, params, retries=1)  # Reduzido retries
@@ -466,7 +466,7 @@ def check_creative_for_dynamic_features(creative_id: str, token: str) -> bool:
     """Verifica se um creative específico tem características de criativo dinâmico (versão otimizada)."""
     try:
         # Buscar apenas campos essenciais para velocidade
-        url = f"https://graph.facebook.com/v22.0/{creative_id}"
+        url = f"https://graph.facebook.com/v24.0/{creative_id}"
         params = {"access_token": token, "fields": "asset_feed_spec,name"}  # Apenas campos essenciais
         
         data = fb_get(url, params, retries=1)  # Reduzido retries
@@ -499,7 +499,7 @@ def get_creative_id_for_ad(ad_id: str, token: str, campaign_id: str = None) -> s
                 return "dynamic_creative"
         
         # Se não é dinâmico ou não temos campaign_id, buscar creative_id normal
-        url = f"https://graph.facebook.com/v22.0/{ad_id}"
+        url = f"https://graph.facebook.com/v24.0/{ad_id}"
         params = {"access_token": token, "fields": "creative"}
         
         data = fb_get(url, params, retries=2)
@@ -640,7 +640,7 @@ def verify_account_access(accounts: list, token: str, group_name: str):
     # Verificar se o token é válido testando uma conta
     if accounts:
         test_account = accounts[0]
-        url = f"https://graph.facebook.com/v22.0/{test_account}"
+        url = f"https://graph.facebook.com/v24.0/{test_account}"
         params = {"access_token": token, "fields": "id,name"}
         
         # Usar fb_get para ter retry automático
@@ -659,7 +659,7 @@ def verify_account_access(accounts: list, token: str, group_name: str):
     accounts_to_check = accounts[:5]
     
     for account in accounts_to_check:
-        url = f"https://graph.facebook.com/v22.0/{account}"
+        url = f"https://graph.facebook.com/v24.0/{account}"
         params = {"access_token": token, "fields": "id,name"}
         
         data = fb_get(url, params, retries=2)

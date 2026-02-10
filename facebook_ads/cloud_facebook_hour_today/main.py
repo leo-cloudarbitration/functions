@@ -127,7 +127,7 @@ else:
 
 async def get_insights_async(session, account_id, access_token, after_cursor=None):
     """Função async para buscar insights do Facebook"""
-    base_url = f"https://graph.facebook.com/v22.0/{account_id}/insights"
+    base_url = f"https://graph.facebook.com/v24.0/{account_id}/insights"
     fields = "account_name,account_id,campaign_id,campaign_name,date_start,date_stop,impressions,spend,ctr"
     params = {
         "date_preset": "today",  # Dados de hoje
