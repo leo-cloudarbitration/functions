@@ -183,3 +183,5 @@ CREATE TABLE `data-v1-423414.test.cloud_facebook_yesterday_ca` (
 
 3. Verifique os logs no GitHub Actions após cada execução
 
+
+

@@ -1,10 +1,12 @@
-name: cloud_facebook_historical
+name: cloud_facebook_utc_today
 
 on:
   schedule:
-    # Executa todo dia às 00:56 BRT (03:56 UTC)
-    # Coleta dados de anteontem e adiciona ao histórico (APPEND)
-    - cron: "56 3 * * *"
+    # Executa a cada hora no minuto 58 (em UTC)
+    # Exemplo: 00:58 UTC, 01:58 UTC, 02:58 UTC, etc.
+    # Em BRT (UTC-3): 21:58, 22:58, 23:58, 00:58, 01:58, etc.
+    # Nota: GitHub Actions pode ter delays de alguns minutos na execução
+    - cron: "58 * * * *"
   workflow_dispatch: {}  # Permite execução manual
 
 jobs:
@@ -12,7 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: facebook_ads/cloud_facebook_historical
+        working-directory: facebook_ads/cloud_facebook_utc_today
 
     steps:
       - name: 📥 Checkout código
@@ -34,9 +36,9 @@ jobs:
         with:
           credentials_json: ${{ secrets.SECRET_GOOGLE_SERVICE_ACCOUNT }}
 
-      - name: 🚀 Executar coleta de dados históricos (anteontem)
+      - name: 🚀 Executar coleta de dados UTC de hoje
         env:
-          SECRET_FACEBOOK_GROUPS_CONFIG: ${{ secrets.SECRET_FACEBOOK_GROUPS_CONFIG }}
+          SECRET_FACEBOOK_GROUPS_CONFIG_UTC: ${{ secrets.SECRET_FACEBOOK_GROUPS_CONFIG_UTC }}
           SECRET_GOOGLE_SERVICE_ACCOUNT: ${{ secrets.SECRET_GOOGLE_SERVICE_ACCOUNT }}
         run: |
           python main.py
@@ -44,13 +46,11 @@ jobs:
       - name: ✅ Resultado
         if: success()
         run: |
-          echo "🎉 Dados históricos (anteontem) coletados e adicionados ao BigQuery com sucesso!"
+          echo "🎉 Dados UTC de hoje coletados e enviados ao BigQuery com sucesso!"
 
       - name: ❌ Tratamento de erro
         if: failure()
         run: |
-          echo "❌ Falha na coleta de dados históricos. Verifique os logs acima."
+          echo "❌ Falha na coleta de dados UTC de hoje. Verifique os logs acima."
           exit 1
-
-
 

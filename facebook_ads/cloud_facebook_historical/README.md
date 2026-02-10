@@ -198,3 +198,5 @@ A tabela histórica pode ser usada para:
 
 Para consultar dados específicos, use filtros por `date_start` ou `date_stop` no BigQuery.
 
+
+

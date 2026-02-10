@@ -69,3 +69,4 @@ jobs:
           echo "❌ Falha na coleta de dados históricos. Verifique os logs acima."
           exit 1
 
+

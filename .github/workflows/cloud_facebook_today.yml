@@ -4,6 +4,8 @@ on:
   schedule:
     # Executa a cada hora no minuto 58 (em UTC)
     # Exemplo: 00:58 UTC, 01:58 UTC, 02:58 UTC, etc.
+    # Em BRT (UTC-3): 21:58, 22:58, 23:58, 00:58, 01:58, etc.
+    # Nota: GitHub Actions pode ter delays de alguns minutos na execução
     - cron: "58 * * * *"
   workflow_dispatch: {}  # Permite execução manual
 
@@ -51,4 +53,6 @@ jobs:
         run: |
           echo "❌ Falha na coleta de dados de hoje. Verifique os logs acima."
           exit 1
+
+
 

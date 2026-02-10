@@ -1,4 +1,4 @@
-name: cloud_facebook_yesterday
+name: cloud_facebook_utc_yesterday
 
 on:
   schedule:
@@ -8,6 +8,9 @@ on:
     # 03:58 BRT = 06:58 UTC
     # 10:58 BRT = 13:58 UTC
     # 18:58 BRT = 21:58 UTC
+    # 21:58 BRT = 00:58 UTC (próximo dia)
+    # 22:58 BRT = 01:58 UTC (próximo dia)
+    # 23:58 BRT = 02:58 UTC (próximo dia)
     - cron: "58 3 * * *"   # 00:58 BRT
     - cron: "58 4 * * *"   # 01:58 BRT
     - cron: "58 6 * * *"   # 03:58 BRT
@@ -23,7 +26,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: facebook_ads/cloud_facebook_yesterday
+        working-directory: facebook_ads/cloud_facebook_utc_yesterday
 
     steps:
       - name: 📥 Checkout código
@@ -45,9 +48,9 @@ jobs:
         with:
           credentials_json: ${{ secrets.SECRET_GOOGLE_SERVICE_ACCOUNT }}
 
-      - name: 🚀 Executar coleta de dados de ontem
+      - name: 🚀 Executar coleta de dados UTC de ontem
         env:
-          SECRET_FACEBOOK_GROUPS_CONFIG: ${{ secrets.SECRET_FACEBOOK_GROUPS_CONFIG }}
+          SECRET_FACEBOOK_GROUPS_CONFIG_UTC: ${{ secrets.SECRET_FACEBOOK_GROUPS_CONFIG_UTC }}
           SECRET_GOOGLE_SERVICE_ACCOUNT: ${{ secrets.SECRET_GOOGLE_SERVICE_ACCOUNT }}
         run: |
           python main.py
@@ -55,13 +58,11 @@ jobs:
       - name: ✅ Resultado
         if: success()
         run: |
-          echo "🎉 Dados de ontem coletados e enviados ao BigQuery com sucesso!"
+          echo "🎉 Dados UTC de ontem coletados e enviados ao BigQuery com sucesso!"
 
       - name: ❌ Tratamento de erro
         if: failure()
         run: |
-          echo "❌ Falha na coleta de dados de ontem. Verifique os logs acima."
+          echo "❌ Falha na coleta de dados UTC de ontem. Verifique os logs acima."
           exit 1
-
-
 
