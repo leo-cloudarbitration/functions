@@ -632,56 +632,87 @@ def consolidate_and_upload_by_table(results: list):
     """Consolida dados por tabela e faz upload consolidado."""
     logger.info("Consolidando dados por tabela...")
     
-    # Agrupar resultados por table_id
-    table_groups = {}
-    for result in results:
-        # Verificar se o resultado tem table_id antes de acessar
-        if "table_id" in result and result.get("table_id"):
-            table_id = result["table_id"]
-            if result["status"] in ["success", "no_data"]:
-                if table_id not in table_groups:
-                    table_groups[table_id] = []
-                table_groups[table_id].append(result)
-    
-    # Processar cada tabela
-    upload_results = []
-    for table_id, group_results in table_groups.items():
-        logger.info("Processando tabela: %s", table_id)
+    try:
+        # Agrupar resultados por table_id
+        table_groups = {}
+        for result in results:
+            # Verificar se o resultado tem table_id antes de acessar
+            if "table_id" in result and result.get("table_id"):
+                table_id = result["table_id"]
+                if result["status"] in ["success", "no_data"]:
+                    if table_id not in table_groups:
+                        table_groups[table_id] = []
+                    table_groups[table_id].append(result)
         
-        # Filtrar apenas grupos com dados
-        groups_with_data = [r for r in group_results if r["status"] == "success" and r["data"] is not None and not r["data"].empty]
+        # Processar cada tabela
+        upload_results = []
+        for table_id, group_results in table_groups.items():
+            try:
+                logger.info("Processando tabela: %s", table_id)
+                
+                # Filtrar apenas grupos com dados
+                groups_with_data = [r for r in group_results if r["status"] == "success" and r["data"] is not None and not r["data"].empty]
+                
+                if groups_with_data:
+                    # Concatenar todos os DataFrames
+                    try:
+                        dfs_to_merge = [r["data"] for r in groups_with_data]
+                        consolidated_df = pd.concat(dfs_to_merge, ignore_index=True)
+                        
+                        logger.info("Tabela %s: consolidando %s grupos com %s registros totais", 
+                                   table_id, len(groups_with_data), len(consolidated_df))
+                        
+                        # Fazer upload consolidado
+                        upload_to_bigquery(consolidated_df, table_id)
+                        
+                        upload_results.append({
+                            "table_id": table_id,
+                            "groups": [r["group"] for r in groups_with_data],
+                            "total_records": len(consolidated_df),
+                            "status": "success"
+                        })
+                    except Exception as e:
+                        logger.error("❌ Erro ao consolidar dados da tabela %s: %s", table_id, str(e), exc_info=True)
+                        upload_results.append({
+                            "table_id": table_id,
+                            "groups": [r["group"] for r in group_results],
+                            "total_records": 0,
+                            "status": "error"
+                        })
+                else:
+                    # Se nenhum grupo tem dados, criar tabela vazia
+                    logger.info("Tabela %s: nenhum grupo com dados, criando tabela vazia", table_id)
+                    try:
+                        empty_df = pd.DataFrame()
+                        upload_to_bigquery(empty_df, table_id)
+                        
+                        upload_results.append({
+                            "table_id": table_id,
+                            "groups": [r["group"] for r in group_results],
+                            "total_records": 0,
+                            "status": "table_cleared"
+                        })
+                    except Exception as e:
+                        logger.error("❌ Erro ao fazer upload de tabela vazia %s: %s", table_id, str(e), exc_info=True)
+                        upload_results.append({
+                            "table_id": table_id,
+                            "groups": [r["group"] for r in group_results],
+                            "total_records": 0,
+                            "status": "error"
+                        })
+            except Exception as e:
+                logger.error("❌ Erro ao processar tabela %s: %s", table_id, str(e), exc_info=True)
+                upload_results.append({
+                    "table_id": table_id,
+                    "groups": [],
+                    "total_records": 0,
+                    "status": "error"
+                })
         
-        if groups_with_data:
-            # Concatenar todos os DataFrames
-            dfs_to_merge = [r["data"] for r in groups_with_data]
-            consolidated_df = pd.concat(dfs_to_merge, ignore_index=True)
-            
-            logger.info("Tabela %s: consolidando %s grupos com %s registros totais", 
-                       table_id, len(groups_with_data), len(consolidated_df))
-            
-            # Fazer upload consolidado
-            upload_to_bigquery(consolidated_df, table_id)
-            
-            upload_results.append({
-                "table_id": table_id,
-                "groups": [r["group"] for r in groups_with_data],
-                "total_records": len(consolidated_df),
-                "status": "success"
-            })
-        else:
-            # Se nenhum grupo tem dados, criar tabela vazia
-            logger.info("Tabela %s: nenhum grupo com dados, criando tabela vazia", table_id)
-            empty_df = pd.DataFrame()
-            upload_to_bigquery(empty_df, table_id)
-            
-            upload_results.append({
-                "table_id": table_id,
-                "groups": [r["group"] for r in group_results],
-                "total_records": 0,
-                "status": "table_cleared"
-            })
-    
-    return upload_results
+        return upload_results
+    except Exception as e:
+        logger.error("❌ Erro crítico ao consolidar dados por tabela: %s", str(e), exc_info=True)
+        return []
 
 
 # ------------------------------------------------------------------------------
@@ -912,94 +943,137 @@ def execute_notebook(event, context):
 # EXECUÇÃO LOCAL
 # ------------------------------------------------------------------------------
 if __name__ == "__main__":
-    start_time = time.time()
-    logger.info("Iniciando execução local do script (DADOS DE ANTEONTEM - HISTÓRICO - COM DADOS POR HORA)...")
-    logger.info("Configuração: MAX_WORKERS=%s, REQUEST_DELAY=%s, ACCOUNT_DELAY=%s", 
-                MAX_WORKERS, REQUEST_DELAY, ACCOUNT_DELAY)
-    
-    # Processar todos os grupos em paralelo
-    results = []
-    with ThreadPoolExecutor(max_workers=len(GROUPS)) as executor:
-        futures = {executor.submit(process_group, group_name, group_config): group_name 
-                  for group_name, group_config in GROUPS.items()}
+    try:
+        start_time = time.time()
+        logger.info("Iniciando execução local do script (DADOS DE ANTEONTEM - HISTÓRICO - COM DADOS POR HORA)...")
         
-        for future in as_completed(futures):
-            group_name = futures[future]
-            try:
-                result = future.result()
-                results.append(result)
-                status_emoji = "✅" if result["status"] == "success" else "⚠️" if result["status"] == "no_data" else "❌"
-                logger.info("%s Grupo %s processado: %s registros em %.2f segundos (Status: %s)", 
-                           status_emoji, result["group"], result["records"], result["time"], result["status"])
-            except Exception as e:
-                logger.error("❌ Erro no grupo %s: %s", group_name, str(e))
-                results.append({"group": group_name, "records": 0, "time": 0, "status": "error", "table_id": BIGQUERY_TABLE_ID})
+        # Verificar se GROUPS foi carregado corretamente
+        if not GROUPS:
+            logger.error("❌ ERRO CRÍTICO: GROUPS não foi carregado ou está vazio!")
+            logger.error("Verifique se SECRET_FACEBOOK_GROUPS_CONFIG_UTC está configurado corretamente.")
+            exit(1)
+        
+        logger.info("Configuração: MAX_WORKERS=%s, REQUEST_DELAY=%s, ACCOUNT_DELAY=%s", 
+                    MAX_WORKERS, REQUEST_DELAY, ACCOUNT_DELAY)
+        logger.info("Total de grupos a processar: %s", len(GROUPS))
+        
+        # Verificar se BigQuery está configurado
+        if bq_client is None:
+            logger.error("❌ ERRO CRÍTICO: BigQuery client não foi configurado!")
+            logger.error("Verifique se SECRET_GOOGLE_SERVICE_ACCOUNT está configurado corretamente.")
+            exit(1)
+        
+        # Processar todos os grupos em paralelo
+        results = []
+        with ThreadPoolExecutor(max_workers=len(GROUPS)) as executor:
+            futures = {executor.submit(process_group, group_name, group_config): group_name 
+                      for group_name, group_config in GROUPS.items()}
+            
+            for future in as_completed(futures):
+                group_name = futures[future]
+                try:
+                    result = future.result()
+                    results.append(result)
+                    status_emoji = "✅" if result["status"] == "success" else "⚠️" if result["status"] == "no_data" else "❌"
+                    logger.info("%s Grupo %s processado: %s registros em %.2f segundos (Status: %s)", 
+                               status_emoji, result["group"], result["records"], result["time"], result["status"])
+                except Exception as e:
+                    logger.error("❌ Erro no grupo %s: %s", group_name, str(e), exc_info=True)
+                    results.append({"group": group_name, "records": 0, "time": 0, "status": "error", "table_id": BIGQUERY_TABLE_ID})
 
-    # Consolidar e fazer upload por tabela
-    logger.info("Iniciando consolidação e upload por tabela...")
-    upload_results = consolidate_and_upload_by_table(results)
-    
-    end_time = time.time()
-    execution_time = end_time - start_time
-    
-    # Resumo final detalhado
-    logger.info("=" * 80)
-    logger.info("📊 RESUMO FINAL DA EXECUÇÃO (DADOS DE ANTEONTEM - HISTÓRICO)")
-    logger.info("=" * 80)
-    
-    total_records = sum(r["records"] for r in results)
-    successful_groups = [r for r in results if r["status"] == "success"]
-    no_data_groups = [r for r in results if r["status"] == "no_data"]
-    access_denied_groups = [r for r in results if r["status"] == "access_denied"]
-    error_groups = [r for r in results if r["status"] == "error"]
-    
-    logger.info("⏱️ Tempo total de execução: %.2f segundos", execution_time)
-    logger.info("📈 Performance geral: %.2f registros/segundo", total_records / execution_time if execution_time > 0 else 0)
-    logger.info("📊 Total de registros processados: %s", total_records)
-    logger.info("")
-    logger.info("📋 Status por grupo:")
-    logger.info("   ✅ Grupos com sucesso: %s/%s", len(successful_groups), len(GROUPS))
-    logger.info("   ⚠️ Grupos sem dados: %s/%s", len(no_data_groups), len(GROUPS))
-    logger.info("   ❌ Grupos com problemas de acesso: %s/%s", len(access_denied_groups), len(GROUPS))
-    logger.info("   💥 Grupos com erro: %s/%s", len(error_groups), len(GROUPS))
-    
-    if successful_groups:
+        # Consolidar e fazer upload por tabela
+        logger.info("Iniciando consolidação e upload por tabela...")
+        try:
+            upload_results = consolidate_and_upload_by_table(results)
+        except Exception as e:
+            logger.error("❌ Erro ao consolidar e fazer upload: %s", str(e), exc_info=True)
+            upload_results = []
+
+        end_time = time.time()
+        execution_time = end_time - start_time
+        
+        # Resumo final detalhado
+        logger.info("=" * 80)
+        logger.info("📊 RESUMO FINAL DA EXECUÇÃO (DADOS DE ANTEONTEM - HISTÓRICO)")
+        logger.info("=" * 80)
+        
+        total_records = sum(r["records"] for r in results)
+        successful_groups = [r for r in results if r["status"] == "success"]
+        no_data_groups = [r for r in results if r["status"] == "no_data"]
+        access_denied_groups = [r for r in results if r["status"] == "access_denied"]
+        error_groups = [r for r in results if r["status"] == "error"]
+        
+        logger.info("⏱️ Tempo total de execução: %.2f segundos", execution_time)
+        logger.info("📈 Performance geral: %.2f registros/segundo", total_records / execution_time if execution_time > 0 else 0)
+        logger.info("📊 Total de registros processados: %s", total_records)
         logger.info("")
-        logger.info("✅ Grupos processados com sucesso:")
-        for group in successful_groups:
-            logger.info("   • %s: %s registros em %.2f segundos", 
-                       group["group"], group["records"], group["time"])
-    
-    if no_data_groups:
+        logger.info("📋 Status por grupo:")
+        logger.info("   ✅ Grupos com sucesso: %s/%s", len(successful_groups), len(GROUPS))
+        logger.info("   ⚠️ Grupos sem dados: %s/%s", len(no_data_groups), len(GROUPS))
+        logger.info("   ❌ Grupos com problemas de acesso: %s/%s", len(access_denied_groups), len(GROUPS))
+        logger.info("   💥 Grupos com erro: %s/%s", len(error_groups), len(GROUPS))
+        
+        if successful_groups:
+            logger.info("")
+            logger.info("✅ Grupos processados com sucesso:")
+            for group in successful_groups:
+                logger.info("   • %s: %s registros em %.2f segundos", 
+                           group["group"], group["records"], group["time"])
+        
+        if no_data_groups:
+            logger.info("")
+            logger.info("⚠️ Grupos sem dados:")
+            for group in no_data_groups:
+                logger.info("   • %s: 0 registros em %.2f segundos", 
+                           group["group"], group["time"])
+        
+        if access_denied_groups:
+            logger.info("")
+            logger.info("❌ Grupos com problemas de acesso:")
+            for group in access_denied_groups:
+                logger.info("   • %s: Token inválido ou sem permissão", group["group"])
+        
+        if error_groups:
+            logger.info("")
+            logger.info("💥 Grupos com erro:")
+            for group in error_groups:
+                logger.info("   • %s: Erro durante processamento", group["group"])
+        
         logger.info("")
-        logger.info("⚠️ Grupos sem dados:")
-        for group in no_data_groups:
-            logger.info("   • %s: 0 registros em %.2f segundos", 
-                       group["group"], group["time"])
-    
-    if access_denied_groups:
-        logger.info("")
-        logger.info("❌ Grupos com problemas de acesso:")
-        for group in access_denied_groups:
-            logger.info("   • %s: Token inválido ou sem permissão", group["group"])
-    
-    if error_groups:
-        logger.info("")
-        logger.info("💥 Grupos com erro:")
-        for group in error_groups:
-            logger.info("   • %s: Erro durante processamento", group["group"])
-    
-    logger.info("")
-    logger.info("📊 RESUMO DE UPLOAD POR TABELA:")
-    for upload_result in upload_results:
-        if upload_result["status"] == "success":
-            logger.info("   ✅ %s: %s registros de %s grupos", 
-                       upload_result["table_id"], upload_result["total_records"], len(upload_result["groups"]))
+        logger.info("📊 RESUMO DE UPLOAD POR TABELA:")
+        for upload_result in upload_results:
+            if upload_result["status"] == "success":
+                logger.info("   ✅ %s: %s registros de %s grupos", 
+                           upload_result["table_id"], upload_result["total_records"], len(upload_result["groups"]))
+            else:
+                logger.info("   🗑️ %s: tabela zerada (%s grupos)", 
+                           upload_result["table_id"], len(upload_result["groups"]))
+        
+        # Salvar metadados de execução
+        try:
+            upload_execution_metadata(results, execution_time, "cloud_facebook_historical_utc")
+        except Exception as e:
+            logger.warning("⚠️ Erro ao salvar metadados de execução: %s", str(e))
+        
+        logger.info("=" * 80)
+        
+        # Determinar código de saída baseado nos resultados
+        if len(error_groups) > 0 or len(access_denied_groups) > 0:
+            logger.warning("⚠️ Execução concluída com problemas. Alguns grupos falharam.")
+            exit(1)
+        elif len(successful_groups) == 0 and len(no_data_groups) == 0:
+            logger.error("❌ Nenhum grupo foi processado com sucesso!")
+            exit(1)
         else:
-            logger.info("   🗑️ %s: tabela zerada (%s grupos)", 
-                       upload_result["table_id"], len(upload_result["groups"]))
-    
-    # Salvar metadados de execução
-    upload_execution_metadata(results, execution_time, "cloud_facebook_historical_utc")
-    
-    logger.info("=" * 80) 
+            logger.info("✅ Execução concluída com sucesso!")
+            exit(0)
+            
+    except KeyboardInterrupt:
+        logger.warning("⚠️ Execução interrompida pelo usuário")
+        exit(130)
+    except Exception as e:
+        logger.error("❌ ERRO CRÍTICO durante a execução: %s", str(e), exc_info=True)
+        logger.error("Stack trace completo:")
+        import traceback
+        logger.error(traceback.format_exc())
+        exit(1) 
