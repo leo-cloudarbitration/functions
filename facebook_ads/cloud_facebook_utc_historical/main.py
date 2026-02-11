@@ -12,6 +12,7 @@ ADICIONA os dados no BigQuery (WRITE_APPEND) - acumula histórico completo
 """
 
 import os
+import sys
 import json
 import time
 import logging
@@ -73,11 +74,16 @@ def load_config_from_json(json_path: str, config_name: str, env_var: str = None)
         raise RuntimeError(f"Erro ao carregar {config_name} de {normalized_path}: {str(e)}")
 
 # Carregar GROUPS de groups_config_utc.json ou variável de ambiente
-GROUPS = load_config_from_json(
-    json_path=os.path.join(os.path.dirname(__file__), "..", "groups_config_utc.json"),
-    config_name="GROUPS",
-    env_var="SECRET_FACEBOOK_GROUPS_CONFIG_UTC"
-)
+# Envolvido em try/except para capturar erros de carregamento
+try:
+    GROUPS = load_config_from_json(
+        json_path=os.path.join(os.path.dirname(__file__), "..", "groups_config_utc.json"),
+        config_name="GROUPS",
+        env_var="SECRET_FACEBOOK_GROUPS_CONFIG_UTC"
+    )
+except Exception as e:
+    logger.error("❌ ERRO CRÍTICO ao carregar GROUPS: %s", str(e), exc_info=True)
+    GROUPS = None  # Será verificado no bloco principal
 
 # Tabela do BigQuery onde todos os dados serão salvos
 BIGQUERY_TABLE_ID = "data-v1-423414.test.cloud_facebook_historical_utc_adjustments"
@@ -911,6 +917,12 @@ def execute_notebook(event, context):
     msg = base64.b64decode(event["data"]).decode("utf-8")
     logger.info("Mensagem recebida: %s", msg)
 
+    # Verificar se GROUPS foi carregado
+    if GROUPS is None or not GROUPS:
+        error_msg = "GROUPS não foi carregado ou está vazio"
+        logger.error("❌ ERRO CRÍTICO: %s", error_msg)
+        raise RuntimeError(error_msg)
+
     # Processar todos os grupos em paralelo
     results = []
     with ThreadPoolExecutor(max_workers=len(GROUPS)) as executor:
@@ -945,12 +957,38 @@ def execute_notebook(event, context):
 if __name__ == "__main__":
     try:
         start_time = time.time()
-        logger.info("Iniciando execução local do script (DADOS DE ANTEONTEM - HISTÓRICO - COM DADOS POR HORA)...")
+        logger.info("=" * 80)
+        logger.info("🚀 Iniciando execução local do script (DADOS DE ANTEONTEM - HISTÓRICO - COM DADOS POR HORA)")
+        logger.info("=" * 80)
+        
+        # Log de informações do ambiente
+        logger.info("📋 Informações do ambiente:")
+        logger.info("   - Python: %s", sys.version)
+        logger.info("   - Diretório de trabalho: %s", os.getcwd())
+        logger.info("   - Arquivo executado: %s", __file__)
+        logger.info("   - SECRET_FACEBOOK_GROUPS_CONFIG_UTC presente: %s", 
+                   "Sim" if os.getenv("SECRET_FACEBOOK_GROUPS_CONFIG_UTC") else "Não")
+        logger.info("   - SECRET_GOOGLE_SERVICE_ACCOUNT presente: %s", 
+                   "Sim" if os.getenv("SECRET_GOOGLE_SERVICE_ACCOUNT") else "Não")
         
         # Verificar se GROUPS foi carregado corretamente
-        if not GROUPS:
-            logger.error("❌ ERRO CRÍTICO: GROUPS não foi carregado ou está vazio!")
+        if GROUPS is None:
+            logger.error("❌ ERRO CRÍTICO: GROUPS não foi carregado!")
             logger.error("Verifique se SECRET_FACEBOOK_GROUPS_CONFIG_UTC está configurado corretamente.")
+            logger.error("Tentando carregar novamente...")
+            try:
+                GROUPS = load_config_from_json(
+                    json_path=os.path.join(os.path.dirname(__file__), "..", "groups_config_utc.json"),
+                    config_name="GROUPS",
+                    env_var="SECRET_FACEBOOK_GROUPS_CONFIG_UTC"
+                )
+            except Exception as e:
+                logger.error("❌ Falha ao carregar GROUPS novamente: %s", str(e), exc_info=True)
+                exit(1)
+        
+        if not GROUPS:
+            logger.error("❌ ERRO CRÍTICO: GROUPS está vazio!")
+            logger.error("Verifique se SECRET_FACEBOOK_GROUPS_CONFIG_UTC contém grupos válidos.")
             exit(1)
         
         logger.info("Configuração: MAX_WORKERS=%s, REQUEST_DELAY=%s, ACCOUNT_DELAY=%s", 
