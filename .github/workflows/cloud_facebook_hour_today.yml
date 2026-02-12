@@ -1,10 +1,8 @@
 name: cloud_facebook_hour_today
 
 on:
-  schedule:
-    # Executa a cada hora no minuto 56 (em UTC)
-    # Exemplo: 00:56 UTC, 01:56 UTC, 02:56 UTC, etc.
-    - cron: "56 * * * *"
+  # Schedule removido - agora gerenciado pelo scheduler central (AWS)
+  # O scheduler central dispara este workflow via gh CLI baseado em config.json
   workflow_dispatch: {}  # Permite execução manual
 
 jobs:

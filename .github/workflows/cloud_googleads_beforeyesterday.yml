@@ -2,10 +2,9 @@ name: cloud_googleads_beforeyesterday
 # Reativado em 07/01/2026
 
 on:
-  workflow_dispatch:  # Permite execução manual
-  schedule:
-    # Executa diariamente às 00:54 BRT (03:54 UTC)
-    - cron: "54 3 * * *"
+  # Schedule removido - agora gerenciado pelo scheduler central (AWS)
+  # O scheduler central dispara este workflow via gh CLI baseado em config.json
+  workflow_dispatch: {}  # Permite execução manual
 
 jobs:
   collect-google-ads-beforeyesterday:

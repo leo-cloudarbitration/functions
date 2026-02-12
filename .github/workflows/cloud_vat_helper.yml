@@ -1,9 +1,8 @@
 name: cloud_vat_helper
 
 on:
-  schedule:
-    # 10:00 BRT = 13:00 UTC (Brasil está em UTC-3)
-    - cron: "0 13 * * *"
+  # Schedule removido - agora gerenciado pelo scheduler central (AWS)
+  # O scheduler central dispara este workflow via gh CLI baseado em config.json
   workflow_dispatch: {}
 
 jobs:

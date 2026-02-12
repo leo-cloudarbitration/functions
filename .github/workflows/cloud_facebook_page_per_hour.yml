@@ -2,8 +2,8 @@ name: cloud_facebook_page_per_hour
 # Reativado em 07/01/2026
 
 on:
-  schedule:
-    - cron: "0 13 * * *"   # 10:00 BRT (GMT-3) = 13:00 UTC
+  # Schedule removido - agora gerenciado pelo scheduler central (AWS)
+  # O scheduler central dispara este workflow via gh CLI baseado em config.json
   workflow_dispatch: {}
 
 jobs:

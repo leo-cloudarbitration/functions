@@ -2,8 +2,8 @@ name: cloud_facebook_adsperformance
 # Reativado em 07/01/2026
 
 on:
-  schedule:
-    - cron: "0 9 * * *"   # 06:00 BRT (GitHub usa UTC)
+  # Schedule removido - agora gerenciado pelo scheduler central (AWS)
+  # O scheduler central dispara este workflow via gh CLI baseado em config.json
   workflow_dispatch: {}
 
 jobs:

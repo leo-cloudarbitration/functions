@@ -1,21 +1,8 @@
 name: cloud_facebook_yesterday
 
 on:
-  schedule:
-    # Executa todo dia no minuto 58 nas seguintes horas (em UTC):
-    # 00:58 BRT = 03:58 UTC
-    # 01:58 BRT = 04:58 UTC
-    # 03:58 BRT = 06:58 UTC
-    # 10:58 BRT = 13:58 UTC
-    # 18:58 BRT = 21:58 UTC
-    - cron: "58 3 * * *"   # 00:58 BRT
-    - cron: "58 4 * * *"   # 01:58 BRT
-    - cron: "58 6 * * *"   # 03:58 BRT
-    - cron: "58 13 * * *"  # 10:58 BRT
-    - cron: "58 21 * * *"  # 18:58 BRT
-    - cron: "58 0 * * *"  # 21:58 BRT
-    - cron: "58 1 * * *"  # 22:58 BRT
-    - cron: "58 2 * * *"  # 23:58 BRT
+  # Schedule removido - agora gerenciado pelo scheduler central (AWS)
+  # O scheduler central dispara este workflow via gh CLI baseado em config.json
   workflow_dispatch: {}  # Permite execução manual
 
 jobs:

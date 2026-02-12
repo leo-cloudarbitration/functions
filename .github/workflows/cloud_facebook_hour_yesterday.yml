@@ -1,8 +1,8 @@
 name: cloud_facebook_hour_yesterday
 
 on:
-  schedule:
-    - cron: "0 13 * * *"   # 10:00 BRT (GMT-3) = 13:00 UTC
+  # Schedule removido - agora gerenciado pelo scheduler central (AWS)
+  # O scheduler central dispara este workflow via gh CLI baseado em config.json
   workflow_dispatch: {}
 
 jobs:
