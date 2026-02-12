@@ -59,6 +59,7 @@ def trigger_workflow(workflow):
     log_event(event)
 
 def main():
+    print("Scheduler executando agora...")
     acquire_lock()
 
     try:
