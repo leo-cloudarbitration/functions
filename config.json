@@ -1,0 +1,172 @@
+{
+  "_comment": "Configuração do scheduler central para workflows do GitHub Actions",
+  "_timezone_info": "Horários em UTC. Brasil (BRT) está em UTC-3",
+  
+  "cloud_facebook_hour_today.yml": {
+    "type": "hourly",
+    "minute": 58,
+    "_description": "Executa a cada hora no minuto 58 UTC (minuto 58 BRT, mas 3 horas antes)",
+    "_brt_time": "Exemplo: 00:58 UTC = 21:58 BRT (do dia anterior)"
+  },
+  
+  "cloud_facebook_hour_yesterday.yml": {
+    "type": "hourly",
+    "minute": 58,
+    "_description": "Executa a cada hora no minuto 58 UTC",
+    "_brt_time": "Exemplo: 00:58 UTC = 21:58 BRT (do dia anterior)"
+  },
+  
+  "cloud_facebook_page_per_hour.yml": {
+    "type": "hourly",
+    "minute": 58,
+    "_description": "Executa a cada hora no minuto 58 UTC",
+    "_brt_time": "Exemplo: 00:58 UTC = 21:58 BRT (do dia anterior)"
+  },
+  
+  "cloud_gam_hour_yesterday.yml": {
+    "type": "hourly",
+    "minute": 58,
+    "_description": "Executa a cada hora no minuto 58 UTC",
+    "_brt_time": "Exemplo: 00:58 UTC = 21:58 BRT (do dia anterior)"
+  },
+  
+  "cloud_googleads_hour.yml": {
+    "type": "hourly",
+    "minute": 58,
+    "_description": "Executa a cada hora no minuto 58 UTC",
+    "_brt_time": "Exemplo: 00:58 UTC = 21:58 BRT (do dia anterior)"
+  },
+  
+  "cloud_googleads_hour_historical.yml": {
+    "type": "hourly",
+    "minute": 58,
+    "_description": "Executa a cada hora no minuto 58 UTC",
+    "_brt_time": "Exemplo: 00:58 UTC = 21:58 BRT (do dia anterior)"
+  },
+  
+  "cloud_helper_pages_per_hour.yml": {
+    "type": "hourly",
+    "minute": 58,
+    "_description": "Executa a cada hora no minuto 58 UTC",
+    "_brt_time": "Exemplo: 00:58 UTC = 21:58 BRT (do dia anterior)"
+  },
+  
+  "cloud_facebook_today.yml": {
+    "type": "daily",
+    "time": "03:00",
+    "timezone": "UTC",
+    "_description": "Executa diariamente às 03:00 UTC",
+    "_brt_time": "03:00 UTC = 00:00 BRT (meia-noite no Brasil)"
+  },
+  
+  "cloud_facebook_yesterday.yml": {
+    "type": "daily",
+    "time": "03:00",
+    "timezone": "UTC",
+    "_description": "Executa diariamente às 03:00 UTC",
+    "_brt_time": "03:00 UTC = 00:00 BRT (meia-noite no Brasil)"
+  },
+  
+  "cloud_facebook_utc_today.yml": {
+    "type": "daily",
+    "time": "03:00",
+    "timezone": "UTC",
+    "_description": "Executa diariamente às 03:00 UTC",
+    "_brt_time": "03:00 UTC = 00:00 BRT (meia-noite no Brasil)"
+  },
+  
+  "cloud_facebook_utc_yesterday.yml": {
+    "type": "daily",
+    "time": "03:00",
+    "timezone": "UTC",
+    "_description": "Executa diariamente às 03:00 UTC",
+    "_brt_time": "03:00 UTC = 00:00 BRT (meia-noite no Brasil)"
+  },
+  
+  "cloud_facebook_historical.yml": {
+    "type": "daily",
+    "time": "04:00",
+    "timezone": "UTC",
+    "_description": "Executa diariamente às 04:00 UTC",
+    "_brt_time": "04:00 UTC = 01:00 BRT"
+  },
+  
+  "cloud_facebook_utc_historical.yml": {
+    "type": "daily",
+    "time": "04:00",
+    "timezone": "UTC",
+    "_description": "Executa diariamente às 04:00 UTC",
+    "_brt_time": "04:00 UTC = 01:00 BRT"
+  },
+  
+  "cloud_googleads_beforeyesterday.yml": {
+    "type": "daily",
+    "time": "04:00",
+    "timezone": "UTC",
+    "_description": "Executa diariamente às 04:00 UTC",
+    "_brt_time": "04:00 UTC = 01:00 BRT"
+  },
+  
+  "cloud_currency_adaccount_helper.yml": {
+    "type": "daily",
+    "time": "02:30",
+    "timezone": "UTC",
+    "_description": "Executa diariamente às 02:30 UTC",
+    "_brt_time": "02:30 UTC = 23:30 BRT (do dia anterior)"
+  },
+  
+  "cloud_helper_adxfee.yml": {
+    "type": "daily",
+    "time": "02:30",
+    "timezone": "UTC",
+    "_description": "Executa diariamente às 02:30 UTC",
+    "_brt_time": "02:30 UTC = 23:30 BRT (do dia anterior)"
+  },
+  
+  "cloud_vat_helper.yml": {
+    "type": "daily",
+    "time": "02:30",
+    "timezone": "UTC",
+    "_description": "Executa diariamente às 02:30 UTC",
+    "_brt_time": "02:30 UTC = 23:30 BRT (do dia anterior)"
+  },
+  
+  "cloud_adsperformance_creative_mapping.yml": {
+    "type": "daily",
+    "time": "03:00",
+    "timezone": "UTC",
+    "_description": "Executa diariamente às 03:00 UTC",
+    "_brt_time": "03:00 UTC = 00:00 BRT (meia-noite no Brasil)"
+  },
+  
+  "cloud_facebook_adsperformance.yml": {
+    "type": "daily",
+    "time": "03:00",
+    "timezone": "UTC",
+    "_description": "Executa diariamente às 03:00 UTC",
+    "_brt_time": "03:00 UTC = 00:00 BRT (meia-noite no Brasil)"
+  },
+  
+  "cloud_gam_adsperformance.yml": {
+    "type": "daily",
+    "time": "03:00",
+    "timezone": "UTC",
+    "_description": "Executa diariamente às 03:00 UTC",
+    "_brt_time": "03:00 UTC = 00:00 BRT (meia-noite no Brasil)"
+  },
+  
+  "_future_expansion": {
+    "_note": "Estrutura preparada para expansão futura",
+    "_supported_types": ["hourly", "daily", "weekly", "monthly"],
+    "_retry_config": {
+      "enabled": false,
+      "max_retries": 3,
+      "retry_delay_minutes": 5
+    },
+    "_priority": {
+      "level": "normal",
+      "_levels": ["low", "normal", "high", "critical"]
+    }
+  }
+}
+
