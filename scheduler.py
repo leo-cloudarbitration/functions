@@ -31,6 +31,12 @@ def release_lock():
 def should_run_hourly(config, current_minute):
     return config.get("minute") == current_minute
 
+def should_run_hourly_specific(config, current_hour, current_minute):
+    """Executa apenas nas horas especificadas no minuto especificado"""
+    allowed_hours = config.get("hours", [])
+    minute = config.get("minute")
+    return current_hour in allowed_hours and current_minute == minute
+
 def should_run_daily(config, current_hour, current_minute):
     time_str = config.get("time")
     if not time_str:
@@ -80,6 +86,9 @@ def main():
 
             if job_type == "hourly":
                 run = should_run_hourly(settings, current_minute)
+
+            elif job_type == "hourly_specific":
+                run = should_run_hourly_specific(settings, current_hour, current_minute)
 
             elif job_type == "daily":
                 run = should_run_daily(settings, current_hour, current_minute)
