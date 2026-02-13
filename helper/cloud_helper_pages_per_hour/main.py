@@ -41,7 +41,7 @@ logger = logging.getLogger(__name__)
 
 # Configurações Google Sheets
 SHEETS_ID = "1hEKsS5VtOw58OKnO6clcSjtZ25ckm5urJSC5EcIV_Oo"
-SHEETS_RANGE = "Sheet1"  # Ajuste se necessário
+SHEETS_RANGE = "helper"  # Ajuste se necessário
 
 # Configurações BigQuery
 BIGQUERY_PROJECT = "data-v1-423414"
