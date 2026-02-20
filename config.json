@@ -10,10 +10,11 @@
   },
   
   "cloud_facebook_hour_yesterday.yml": {
-    "type": "hourly",
-    "minute": 58,
-    "_description": "Executa a cada hora no minuto 58 UTC",
-    "_brt_time": "Exemplo: 00:58 UTC = 21:58 BRT (do dia anterior)"
+    "type": "daily",
+    "time": "12:00",
+    "timezone": "UTC",
+    "_description": "Executa diariamente às 12:00 UTC (9:00 UTC-3)",
+    "_brt_time": "12:00 UTC = 09:00 BRT"
   },
   
   "cloud_facebook_page_per_hour.yml": {
