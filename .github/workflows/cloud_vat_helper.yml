@@ -32,5 +32,7 @@ jobs:
           credentials_json: ${{ secrets.SECRET_GOOGLE_SERVICE_ACCOUNT }}
 
       - name: Run VAT Helper Sync
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
         run: python main.py
-
