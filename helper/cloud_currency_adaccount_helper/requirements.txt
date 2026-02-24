@@ -1,11 +1,10 @@
-# Currency Helper - Google Sheets → BigQuery
+# Currency Helper - Supabase → BigQuery
 # Dependências para sincronização de dados de moeda das contas de anúncio
 
 google-cloud-bigquery>=3.0.0
 google-auth>=2.0.0
-gspread>=5.0.0
+requests>=2.28.0
 pandas>=2.0.0
 pytz>=2023.0
 pyarrow>=14.0.0
 db-dtypes>=1.0.0
-
