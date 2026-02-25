@@ -103,10 +103,10 @@
   },
   "cloud_facebook_utc_historical.yml": {
     "type": "daily",
-    "time": "04:00",
+    "time": "00:58",
     "timezone": "UTC",
-    "_description": "Executa diariamente às 04:00 UTC",
-    "_brt_time": "04:00 UTC = 01:00 BRT"
+    "_description": "Executa diariamente às 00:58 UTC (logo após virada do dia UTC)",
+    "_brt_time": "00:58 UTC = 21:58 BRT (do dia anterior)"
   },
   "cloud_googleads_beforeyesterday.yml": {
     "type": "daily",
