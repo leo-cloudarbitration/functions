@@ -15,7 +15,7 @@ import os
 import json
 import time
 import logging
-from datetime import datetime
+from datetime import datetime, timedelta
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 import requests
@@ -198,10 +198,15 @@ def fb_get(url: str, params: dict, retries: int = 0, context: str = "", max_rate
 
 # ---------- INSIGHTS ----------------------------------------------------------
 def get_insights_page(account_id: str, token: str, after: str | None = None, is_lifetime: bool = False, use_smaller_limit: bool = False):
-    tz = pytz.timezone("America/Sao_Paulo")
+    tz = pytz.timezone("UTC")  # Contas UTC (COINIS) — usar fuso UTC para datas
     now = datetime.now(tz)
+
+    # Calcular data de ontem em UTC
+    yesterday = now - timedelta(days=1)
+    date_str = yesterday.strftime("%Y-%m-%d")
+
     url = f"https://graph.facebook.com/v24.0/{account_id}/insights"
-    
+
     # Escolher campos baseado na conta
     if account_id in PROBLEMATIC_ACCOUNTS:
         fields = INSIGHTS_FIELDS_BASIC
@@ -209,12 +214,15 @@ def get_insights_page(account_id: str, token: str, after: str | None = None, is_
     else:
         fields = INSIGHTS_FIELDS_FULL
         logger.info("📊 [%s] Usando campos completos (com conversions)", account_id)
-    
+
+    # time_range precisa ser JSON string para a API do Facebook
+    time_range_json = json.dumps({"since": date_str, "until": date_str})
+
     params = {
         "access_token": token,
         "fields": fields,
         "time_increment": "all_days" if is_lifetime else "1",
-        "date_preset": "yesterday",  # Dados de yesterday
+        "time_range": time_range_json,  # Dados de ontem em UTC (explícito, sem depender de date_preset)
         "level": "campaign",
         "breakdowns": "hourly_stats_aggregated_by_advertiser_time_zone",  # Sempre incluir dados por hora
         "limit": 25 if use_smaller_limit else 50,  # Reduzido drasticamente: 50 para 25, 500 para 50
