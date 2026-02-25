@@ -204,10 +204,10 @@ def fb_get(url: str, params: dict, retries: int = 0, context: str = "", max_rate
 
 # ---------- INSIGHTS ----------------------------------------------------------
 def get_insights_page(account_id: str, token: str, after: str | None = None, is_lifetime: bool = False, use_smaller_limit: bool = False):
-    tz = pytz.timezone("America/Sao_Paulo")
+    tz = pytz.timezone("UTC")  # Contas UTC (COINIS) — usar fuso UTC para datas
     now = datetime.now(tz)
-    
-    # Calcular data de anteontem (2 dias atrás)
+
+    # Calcular data de anteontem (2 dias atrás) em UTC
     day_before_yesterday = now - timedelta(days=2)
     date_str = day_before_yesterday.strftime("%Y-%m-%d")
     
