@@ -125,26 +125,36 @@ def prepare_performance(data, captured_at):
     return rows
 
 
+def _safe_float(val):
+    """Converte para float de forma segura (API pode retornar int, str ou None)."""
+    if val is None:
+        return None
+    try:
+        return float(val)
+    except (ValueError, TypeError):
+        return None
+
+
 def prepare_rules(data, network_id, site, captured_at):
     """Converte dados de regras para formato BigQuery."""
     rows = []
     for r in data:
         rows.append({
             "captured_at": captured_at,
-            "network_id": network_id,
+            "network_id": str(network_id),
             "site": site,
             "ad_unit": r.get("ad_unit"),
-            "aggressiveness": r.get("aggressiveness"),
+            "aggressiveness": _safe_float(r.get("aggressiveness")),
             "country": r.get("country"),
-            "desired_match_rate": r.get("desired_match_rate"),
+            "desired_match_rate": _safe_float(r.get("desired_match_rate")),
             "device": r.get("device"),
             "domain": r.get("domain"),
-            "ecpm": r.get("ecpm"),
-            "impressions": r.get("impressions"),
-            "match_rate": r.get("match_rate"),
+            "ecpm": _safe_float(r.get("ecpm")),
+            "impressions": _safe_float(r.get("impressions")),
+            "match_rate": _safe_float(r.get("match_rate")),
             "request_uri": r.get("request_uri"),
-            "revenue": r.get("revenue"),
-            "rule": r.get("rule"),
+            "revenue": _safe_float(r.get("revenue")),
+            "rule": _safe_float(r.get("rule")),
             "state": r.get("state"),
             "utm_source": r.get("utm_source"),
         })
@@ -194,7 +204,7 @@ SCHEMA_RULES = [
     bigquery.SchemaField("device", "STRING"),
     bigquery.SchemaField("domain", "STRING"),
     bigquery.SchemaField("ecpm", "FLOAT64"),
-    bigquery.SchemaField("impressions", "INT64"),
+    bigquery.SchemaField("impressions", "FLOAT64"),
     bigquery.SchemaField("match_rate", "FLOAT64"),
     bigquery.SchemaField("request_uri", "STRING"),
     bigquery.SchemaField("revenue", "FLOAT64"),
