@@ -157,6 +157,20 @@
     "_description": "Executa diariamente às 03:00 UTC",
     "_brt_time": "03:00 UTC = 00:00 BRT (meia-noite no Brasil)"
   },
+  "cloud_av_adunit_hour_today.yml": {
+    "type": "hourly_specific",
+    "minute": 30,
+    "hours": [8, 12, 16, 20, 0],
+    "_description": "Performance+rules intraday (today) — 5x/dia",
+    "_brt_time": "05:30, 09:30, 13:30, 17:30, 21:30 BRT"
+  },
+  "cloud_av_adunit_hour_yesterday.yml": {
+    "type": "daily",
+    "time": "06:00",
+    "timezone": "UTC",
+    "_description": "Performance+rules do dia anterior — fecha dados completos",
+    "_brt_time": "06:00 UTC = 03:00 BRT"
+  },
   "_future_expansion": {
     "_note": "Estrutura preparada para expansão futura",
     "_supported_types": [
