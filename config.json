@@ -151,11 +151,16 @@
     "_brt_time": "03:00 UTC = 00:00 BRT (meia-noite no Brasil)"
   },
   "cloud_gam_adsperformance.yml": {
+    "type": "disabled",
+    "_description": "DESATIVADO — substituido por cloud_av_adsperformance.yml",
+    "_brt_time": "N/A"
+  },
+  "cloud_av_adsperformance.yml": {
     "type": "daily",
-    "time": "03:00",
+    "time": "13:00",
     "timezone": "UTC",
-    "_description": "Executa diariamente às 03:00 UTC",
-    "_brt_time": "03:00 UTC = 00:00 BRT (meia-noite no Brasil)"
+    "_description": "ActiveView adsperformance (utm_content) — dados de ontem, 10:00 BRT",
+    "_brt_time": "13:00 UTC = 10:00 BRT"
   },
   "cloud_av_adunit_hour_today.yml": {
     "type": "hourly_specific",
