@@ -19,6 +19,7 @@ import json
 import logging
 import time
 from datetime import datetime, timedelta
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 import pandas as pd
 import requests
@@ -53,6 +54,9 @@ TABLE_ID = f"{BIGQUERY_PROJECT}.{BIGQUERY_DATASET}.{BIGQUERY_TABLE}"
 
 # Lookback window (days) — default 1 = yesterday only
 LOOKBACK_DAYS = int(os.getenv("LOOKBACK_DAYS", "1"))
+
+# Parallelism
+MAX_WORKERS = int(os.getenv("MAX_WORKERS", "10"))
 
 # ------------------------------------------------------------------------------
 # BIGQUERY CLIENT
@@ -300,21 +304,28 @@ def main():
         logger.error("No accounts found with valid tokens")
         return
 
-    # Fetch insights for each account
-    all_rows = []
-    for acct in accounts:
+    # Fetch insights for each account (parallel)
+    def fetch_account(acct):
         account_id = acct["conta_anuncio_id"]
         account_name = acct.get("conta_anuncio", str(account_id))
         token = acct["token"]
         currency = acct.get("currency", "BRL")
-
         logger.info(f"Fetching {account_name} ({account_id}, {currency})...")
         rows = fetch_ad_insights(account_id, token, currency, account_name, start_date, end_date)
-        logger.info(f"  Got {len(rows)} rows")
-        all_rows.extend(rows)
+        logger.info(f"  {account_name}: {len(rows)} rows")
+        return rows
 
-        # Small delay between accounts to avoid rate limits
-        time.sleep(2)
+    all_rows = []
+    logger.info(f"Fetching {len(accounts)} accounts with {MAX_WORKERS} workers...")
+    with ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
+        futures = {executor.submit(fetch_account, acct): acct for acct in accounts}
+        for future in as_completed(futures):
+            try:
+                rows = future.result()
+                all_rows.extend(rows)
+            except Exception as e:
+                acct = futures[future]
+                logger.error(f"Error fetching {acct.get('conta_anuncio', '?')}: {e}")
 
     logger.info(f"Total rows fetched: {len(all_rows)}")
 
