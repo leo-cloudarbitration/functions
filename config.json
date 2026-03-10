@@ -144,11 +144,16 @@
     "_brt_time": "03:00 UTC = 00:00 BRT (meia-noite no Brasil)"
   },
   "cloud_facebook_adsperformance.yml": {
+    "type": "disabled",
+    "_description": "DESATIVADO — substituído por cloud_facebook_ad_performance.yml (helper dinâmico)",
+    "_brt_time": "N/A"
+  },
+  "cloud_facebook_ad_performance.yml": {
     "type": "daily",
-    "time": "03:00",
+    "time": "13:00",
     "timezone": "UTC",
-    "_description": "Executa diariamente às 03:00 UTC",
-    "_brt_time": "03:00 UTC = 00:00 BRT (meia-noite no Brasil)"
+    "_description": "Pipeline principal FB ad-level (helper dinâmico, contas do Supabase) — dados de ontem",
+    "_brt_time": "13:00 UTC = 10:00 BRT"
   },
   "cloud_gam_adsperformance.yml": {
     "type": "disabled",
