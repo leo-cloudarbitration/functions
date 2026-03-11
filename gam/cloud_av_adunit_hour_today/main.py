@@ -127,11 +127,14 @@ def prepare_performance(data, captured_at):
 
 
 def _safe_float(val):
-    """Converte para float de forma segura (API pode retornar int, str ou None)."""
+    """Converte para float de forma segura (API pode retornar int, str, NaN ou None)."""
     if val is None:
         return None
     try:
-        return float(val)
+        f = float(val)
+        if f != f:  # NaN check (math.isnan without import)
+            return None
+        return f
     except (ValueError, TypeError):
         return None
 
