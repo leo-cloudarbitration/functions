@@ -43,6 +43,8 @@ HEADERS = {"Authorization": API_KEY}
 REPORT_DAYS_OFFSET = int(os.getenv("REPORT_DAYS_OFFSET", "1"))
 
 # Lista de sites GAM
+# source: "from-gam" (default) usa endpoint /from-gam; "base" usa endpoint sem suffix
+# onplif e amigadamamae reportam via AdX, não GAM — precisam do endpoint base
 GAM_SITES = [
     {"network_id": "22958804404", "site": "finanzco.com"},
     {"network_id": "22958804404", "site": "espacoextra.com.br"},
@@ -51,8 +53,8 @@ GAM_SITES = [
     {"network_id": "22024304448", "site": "superinvestmentguide.com"},
     {"network_id": "23150219615", "site": "brasileirinho.blog.br"},
     {"network_id": "23295671757", "site": "bimviral.com"},
-    {"network_id": "23152058020", "site": "onplif.com"},
-    {"network_id": "23302708904", "site": "amigadamamae.com.br"},
+    {"network_id": "23152058020", "site": "onplif.com", "source": "base"},
+    {"network_id": "23302708904", "site": "amigadamamae.com.br", "source": "base"},
     {"network_id": "23123915180", "site": "investimentoagora.com.br"},
     {"network_id": "23124049988", "site": "vamosestudar.com.br"},
     {"network_id": "23313676084", "site": "ifinane.com"}
@@ -249,47 +251,76 @@ def upload_to_bigquery(df: pd.DataFrame, table_id: str):
         logger.error("❌ Erro ao adicionar dados ao BigQuery: %s", str(e))
         raise
 
-async def fetch_kvp_data_from_api_async(session, network_id, site_name):
+async def fetch_kvp_data_from_api_async(session, network_id, site_name, source="from-gam", max_retries=3):
     """
     Faz uma chamada assíncrona para a API e retorna os dados agregados por KVP filtrados por 'utm_content'.
+    Retry com backoff exponencial para erros 5xx.
+    source: "from-gam" usa /from-gam, "base" usa endpoint sem suffix.
     """
-    try:
-        # Configura a data para hoje no horário local (GMT-3)
-        local_tz = timezone("America/Sao_Paulo")
-        now_local = datetime.now(local_tz)
-        target_date = (now_local - timedelta(days=REPORT_DAYS_OFFSET)).strftime("%Y-%m-%d")
-        start_date = end_date = target_date
-        
+    local_tz = timezone("America/Sao_Paulo")
+    now_local = datetime.now(local_tz)
+    target_date = (now_local - timedelta(days=REPORT_DAYS_OFFSET)).strftime("%Y-%m-%d")
+    start_date = end_date = target_date
+
+    if source == "base":
+        url = f"{API_BASE_URL}/report/kvp/{network_id}/{site_name}"
+    else:
         url = f"{API_BASE_URL}/report/kvp/{network_id}/{site_name}/from-gam"
-        params = {
-            "start_date": start_date,
-            "end_date": end_date,
-            "key": "utm_content"
-        }
-        
-        logger.info(f"🔍 Buscando dados para {site_name} (network_id: {network_id})")
-        logger.info(f"URL: {url}")
-        logger.info(f"Parâmetros: {params}")
-        
-        async with session.get(url, headers=HEADERS, params=params) as response:
-            logger.info(f"Status Code para {site_name}: {response.status}")
-            response_text = await response.text()
-            
-            if response.status != 200:
-                logger.warning(f"Erro ao buscar dados para {site_name} (network_id: {network_id}). Status: {response.status}")
-                return []  # Retorna lista vazia em caso de erro
-                
-            data = (await response.json())["response"]
-            # Anota cada registro com o network_id e o site de origem
-            for item in data:
-                item["network_id"] = network_id
-                item["site"] = site_name
-            
-            logger.info(f"✅ Dados obtidos para {site_name}: {len(data)} registros")
-            return data
-    except Exception as e:
-        logger.warning(f"Erro ao buscar dados da API para {site_name} (network_id: {network_id}): {e}")
-        return []  # Retorna lista vazia em caso de erro
+    params = {
+        "start_date": start_date,
+        "end_date": end_date,
+        "key": "utm_content"
+    }
+
+    logger.info(f"🔍 Buscando dados para {site_name} (network_id: {network_id})")
+    logger.info(f"URL: {url}")
+    logger.info(f"Parâmetros: {params}")
+
+    for attempt in range(1, max_retries + 1):
+        try:
+            async with session.get(url, headers=HEADERS, params=params, timeout=aiohttp.ClientTimeout(total=120)) as response:
+                logger.info(f"Status Code para {site_name}: {response.status} (attempt {attempt})")
+
+                if response.status >= 500:
+                    logger.warning(f"Erro 5xx para {site_name}: {response.status} (attempt {attempt}/{max_retries})")
+                    if attempt < max_retries:
+                        wait = 10 * attempt
+                        logger.info(f"Retry em {wait}s...")
+                        await asyncio.sleep(wait)
+                        continue
+                    else:
+                        logger.error(f"FALHA após {max_retries} tentativas para {site_name} (network_id: {network_id}). Status: {response.status}")
+                        return []
+
+                if response.status != 200:
+                    logger.warning(f"Erro ao buscar dados para {site_name} (network_id: {network_id}). Status: {response.status}")
+                    return []
+
+                data = (await response.json())["response"]
+                for item in data:
+                    item["network_id"] = network_id
+                    item["site"] = site_name
+
+                logger.info(f"✅ Dados obtidos para {site_name}: {len(data)} registros")
+                return data
+        except asyncio.TimeoutError:
+            logger.warning(f"Timeout para {site_name} (attempt {attempt}/{max_retries})")
+            if attempt < max_retries:
+                wait = 10 * attempt
+                logger.info(f"Retry em {wait}s...")
+                await asyncio.sleep(wait)
+            else:
+                logger.error(f"FALHA timeout após {max_retries} tentativas para {site_name}")
+                return []
+        except Exception as e:
+            logger.warning(f"Erro para {site_name} (attempt {attempt}/{max_retries}): {e}")
+            if attempt < max_retries:
+                wait = 10 * attempt
+                await asyncio.sleep(wait)
+            else:
+                logger.error(f"FALHA após {max_retries} tentativas para {site_name}: {e}")
+                return []
+    return []
 
 async def run_gam_collection():
     """
@@ -301,7 +332,7 @@ async def run_gam_collection():
         async with aiohttp.ClientSession() as session:
             # Cria tasks para todos os sites
             tasks = [
-                fetch_kvp_data_from_api_async(session, site["network_id"], site["site"])
+                fetch_kvp_data_from_api_async(session, site["network_id"], site["site"], site.get("source", "from-gam"))
                 for site in GAM_SITES
             ]
             
