@@ -136,14 +136,7 @@
     "_description": "Executa diariamente às 02:30 UTC",
     "_brt_time": "02:30 UTC = 23:30 BRT (do dia anterior)"
   },
-  "cloud_adsperformance_creative_mapping.yml": {
-    "type": "daily",
-    "time": "03:00",
-    "timezone": "UTC",
-    "_description": "Executa diariamente às 03:00 UTC",
-    "_brt_time": "03:00 UTC = 00:00 BRT (meia-noite no Brasil)"
-  },
-  "cloud_facebook_ad_performance.yml": {
+"cloud_facebook_ad_performance.yml": {
     "type": "daily",
     "time": "13:00",
     "timezone": "UTC",
