@@ -56,20 +56,19 @@ def fetch_creative_mapping():
     headers = {
         "apikey": SUPABASE_KEY,
         "Authorization": f"Bearer {SUPABASE_KEY}",
-        "Prefer": "count=exact",
     }
     select = "facebook_ad_id,video_id,creative_id,creative_nome,ad_account_id,updated_at"
 
     all_data = []
-    page_size = 500
+    page_size = 200
     offset = 0
 
     while True:
-        logger.info(f"  Buscando registros {offset}-{offset + page_size - 1}...")
+        logger.info(f"  Buscando registros offset={offset} limit={page_size}...")
         resp = requests.get(
             base_url,
-            headers={**headers, "Range": f"{offset}-{offset + page_size - 1}"},
-            params={"select": select, "order": "facebook_ad_id"},
+            headers=headers,
+            params={"select": select, "limit": page_size, "offset": offset},
             timeout=30,
         )
         if resp.status_code >= 400:
