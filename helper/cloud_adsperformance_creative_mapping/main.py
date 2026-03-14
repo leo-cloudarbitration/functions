@@ -52,39 +52,19 @@ def fetch_creative_mapping():
     if not SUPABASE_URL or not SUPABASE_KEY:
         raise ValueError("SUPABASE_URL e SUPABASE_KEY devem estar configurados")
 
-    base_url = f"{SUPABASE_URL}/rest/v1/{SUPABASE_TABLE}"
+    rpc_url = f"{SUPABASE_URL}/rest/v1/rpc/get_creative_mapping"
     headers = {
         "apikey": SUPABASE_KEY,
         "Authorization": f"Bearer {SUPABASE_KEY}",
+        "Content-Type": "application/json",
     }
-    select = "facebook_ad_id,video_id,creative_id,creative_nome,ad_account_id,updated_at"
 
-    all_data = []
-    page_size = 200
-    offset = 0
-
-    while True:
-        logger.info(f"  Buscando registros offset={offset} limit={page_size}...")
-        resp = requests.get(
-            base_url,
-            headers=headers,
-            params={"select": select, "limit": page_size, "offset": offset},
-            timeout=30,
-        )
-        if resp.status_code >= 400:
-            logger.error(f"  HTTP {resp.status_code}: {resp.text[:300]}")
-            resp.raise_for_status()
-        batch = resp.json()
-
-        if not batch:
-            break
-
-        all_data.extend(batch)
-        logger.info(f"  {len(batch)} registros (total: {len(all_data)})")
-
-        if len(batch) < page_size:
-            break
-        offset += page_size
+    logger.info("  Chamando RPC get_creative_mapping...")
+    resp = requests.post(rpc_url, headers=headers, json={}, timeout=60)
+    if resp.status_code >= 400:
+        logger.error(f"  HTTP {resp.status_code}: {resp.text[:300]}")
+        resp.raise_for_status()
+    all_data = resp.json()
 
     logger.info(f"Total: {len(all_data)} registros do Supabase")
     return all_data
