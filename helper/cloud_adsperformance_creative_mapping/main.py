@@ -69,10 +69,12 @@ def fetch_creative_mapping():
         resp = requests.get(
             base_url,
             headers={**headers, "Range": f"{offset}-{offset + page_size - 1}"},
-            params={"select": select},
+            params={"select": select, "order": "facebook_ad_id"},
             timeout=30,
         )
-        resp.raise_for_status()
+        if resp.status_code >= 400:
+            logger.error(f"  HTTP {resp.status_code}: {resp.text[:300]}")
+            resp.raise_for_status()
         batch = resp.json()
 
         if not batch:
