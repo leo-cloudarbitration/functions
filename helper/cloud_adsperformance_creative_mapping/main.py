@@ -26,6 +26,7 @@ try:
     SUPABASE_AVAILABLE = True
 except ImportError:
     SUPABASE_AVAILABLE = False
+    Client = None
     logging.warning("Biblioteca supabase não disponível. Instale com: pip install supabase")
 
 # ------------------------------------------------------------------------------
