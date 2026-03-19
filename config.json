@@ -1,6 +1,6 @@
 {
-  "_comment": "Configuração do scheduler central para workflows do GitHub Actions",
-  "_timezone_info": "Horários em UTC. Brasil (BRT) está em UTC-3",
+  "_comment": "Configura\u00e7\u00e3o do scheduler central para workflows do GitHub Actions",
+  "_timezone_info": "Hor\u00e1rios em UTC. Brasil (BRT) est\u00e1 em UTC-3",
   "cloud_facebook_hour_today.yml": {
     "type": "hourly",
     "minute": 58,
@@ -11,7 +11,7 @@
     "type": "daily",
     "time": "12:00",
     "timezone": "UTC",
-    "_description": "Executa diariamente às 12:00 UTC (9:00 UTC-3)",
+    "_description": "Executa diariamente \u00e0s 12:00 UTC (9:00 UTC-3)",
     "_brt_time": "12:00 UTC = 09:00 BRT"
   },
   "cloud_facebook_page_per_hour.yml": {
@@ -24,7 +24,7 @@
     "type": "daily",
     "time": "12:00",
     "timezone": "UTC",
-    "_description": "Executa diariamente às 12:00 UTC (9:00 UTC-3)",
+    "_description": "Executa diariamente \u00e0s 12:00 UTC (9:00 UTC-3)",
     "_brt_time": "12:00 UTC = 09:00 BRT"
   },
   "cloud_googleads_hour.yml": {
@@ -37,7 +37,7 @@
     "type": "daily",
     "time": "12:00",
     "timezone": "UTC",
-    "_description": "Executa diariamente às 12:00 UTC (9:00 UTC-3)",
+    "_description": "Executa diariamente \u00e0s 12:00 UTC (9:00 UTC-3)",
     "_brt_time": "12:00 UTC = 09:00 BRT"
   },
   "cloud_helper_pages_per_hour.yml": {
@@ -68,7 +68,7 @@
       0
     ],
     "_description": "Executa no minuto 57 apenas nas horas especificadas (em UTC)",
-    "_brt_time": "Horários BRT: 00:57, 01:57, 02:57, 03:57, 05:57, 09:57, 12:57, 15:57, 18:57, 21:57"
+    "_brt_time": "Hor\u00e1rios BRT: 00:57, 01:57, 02:57, 03:57, 05:57, 09:57, 12:57, 15:57, 18:57, 21:57"
   },
   "cloud_facebook_utc_today.yml": {
     "type": "hourly",
@@ -92,80 +92,86 @@
       0
     ],
     "_description": "Executa no minuto 57 apenas nas horas especificadas (em UTC)",
-    "_brt_time": "Horários BRT: 00:57, 01:57, 02:57, 03:57, 05:57, 09:57, 12:57, 15:57, 18:57, 21:57"
+    "_brt_time": "Hor\u00e1rios BRT: 00:57, 01:57, 02:57, 03:57, 05:57, 09:57, 12:57, 15:57, 18:57, 21:57"
   },
   "cloud_facebook_historical.yml": {
     "type": "daily",
     "time": "04:00",
     "timezone": "UTC",
-    "_description": "Executa diariamente às 04:00 UTC",
+    "_description": "Executa diariamente \u00e0s 04:00 UTC",
     "_brt_time": "04:00 UTC = 01:00 BRT"
   },
   "cloud_facebook_utc_historical.yml": {
     "type": "daily",
     "time": "00:58",
     "timezone": "UTC",
-    "_description": "Executa diariamente às 00:58 UTC (logo após virada do dia UTC)",
+    "_description": "Executa diariamente \u00e0s 00:58 UTC (logo ap\u00f3s virada do dia UTC)",
     "_brt_time": "00:58 UTC = 21:58 BRT (do dia anterior)"
   },
   "cloud_googleads_beforeyesterday.yml": {
     "type": "daily",
     "time": "04:00",
     "timezone": "UTC",
-    "_description": "Executa diariamente às 04:00 UTC",
+    "_description": "Executa diariamente \u00e0s 04:00 UTC",
     "_brt_time": "04:00 UTC = 01:00 BRT"
   },
   "cloud_currency_adaccount_helper.yml": {
     "type": "daily",
     "time": "02:30",
     "timezone": "UTC",
-    "_description": "Executa diariamente às 02:30 UTC",
+    "_description": "Executa diariamente \u00e0s 02:30 UTC",
     "_brt_time": "02:30 UTC = 23:30 BRT (do dia anterior)"
   },
   "cloud_helper_adxfee.yml": {
     "type": "daily",
     "time": "02:30",
     "timezone": "UTC",
-    "_description": "Executa diariamente às 02:30 UTC",
+    "_description": "Executa diariamente \u00e0s 02:30 UTC",
     "_brt_time": "02:30 UTC = 23:30 BRT (do dia anterior)"
   },
   "cloud_vat_helper.yml": {
     "type": "daily",
     "time": "02:30",
     "timezone": "UTC",
-    "_description": "Executa diariamente às 02:30 UTC",
+    "_description": "Executa diariamente \u00e0s 02:30 UTC",
     "_brt_time": "02:30 UTC = 23:30 BRT (do dia anterior)"
   },
-"cloud_facebook_ad_performance.yml": {
+  "cloud_facebook_ad_performance.yml": {
     "type": "daily",
     "time": "13:00",
     "timezone": "UTC",
-    "_description": "Pipeline principal FB ad-level (helper dinâmico, contas do Supabase) — dados de ontem",
+    "_description": "Pipeline principal FB ad-level (helper din\u00e2mico, contas do Supabase) \u2014 dados de ontem",
     "_brt_time": "13:00 UTC = 10:00 BRT"
   },
   "cloud_av_adsperformance.yml": {
     "type": "daily",
     "time": "13:00",
     "timezone": "UTC",
-    "_description": "ActiveView adsperformance (utm_content) — dados de ontem, 10:00 BRT",
+    "_description": "ActiveView adsperformance (utm_content) \u2014 dados de ontem, 10:00 BRT",
     "_brt_time": "13:00 UTC = 10:00 BRT"
   },
   "cloud_av_adunit_hour_today.yml": {
     "type": "hourly_specific",
     "minute": 30,
-    "hours": [8, 12, 16, 20, 0],
-    "_description": "Performance+rules intraday (today) — 5x/dia",
+    "hours": [
+      8,
+      12,
+      16,
+      20,
+      0
+    ],
+    "_description": "Performance+rules intraday (today) \u2014 5x/dia",
     "_brt_time": "05:30, 09:30, 13:30, 17:30, 21:30 BRT"
   },
   "cloud_av_adunit_hour_yesterday.yml": {
     "type": "daily",
     "time": "06:00",
     "timezone": "UTC",
-    "_description": "Performance+rules do dia anterior — fecha dados completos",
+    "_description": "Performance+rules do dia anterior \u2014 fecha dados completos",
     "_brt_time": "06:00 UTC = 03:00 BRT"
   },
   "_future_expansion": {
-    "_note": "Estrutura preparada para expansão futura",
+    "_note": "Estrutura preparada para expans\u00e3o futura",
     "_supported_types": [
       "hourly",
       "hourly_specific",
@@ -187,5 +193,137 @@
         "critical"
       ]
     }
+  },
+  "snapshot_foto_f1_spend": {
+    "type": "daily",
+    "time": "07:00",
+    "timezone": "UTC",
+    "workflow": "snapshot-foto.yml",
+    "repo": "leo-cloudarbitration/arquivos-claude",
+    "inputs": {
+      "faixa": "F1",
+      "tipo": "spend"
+    },
+    "_brt_time": "04:00 BRT"
+  },
+  "snapshot_foto_f1_revenue": {
+    "type": "daily",
+    "time": "08:30",
+    "timezone": "UTC",
+    "workflow": "snapshot-foto.yml",
+    "repo": "leo-cloudarbitration/arquivos-claude",
+    "inputs": {
+      "faixa": "F1",
+      "tipo": "revenue"
+    },
+    "_brt_time": "05:30 BRT"
+  },
+  "snapshot_foto_f2_spend": {
+    "type": "daily",
+    "time": "11:00",
+    "timezone": "UTC",
+    "workflow": "snapshot-foto.yml",
+    "repo": "leo-cloudarbitration/arquivos-claude",
+    "inputs": {
+      "faixa": "F2",
+      "tipo": "spend"
+    },
+    "_brt_time": "08:00 BRT"
+  },
+  "snapshot_foto_f2_revenue": {
+    "type": "daily",
+    "time": "12:30",
+    "timezone": "UTC",
+    "workflow": "snapshot-foto.yml",
+    "repo": "leo-cloudarbitration/arquivos-claude",
+    "inputs": {
+      "faixa": "F2",
+      "tipo": "revenue"
+    },
+    "_brt_time": "09:30 BRT"
+  },
+  "snapshot_foto_f3_spend": {
+    "type": "daily",
+    "time": "15:00",
+    "timezone": "UTC",
+    "workflow": "snapshot-foto.yml",
+    "repo": "leo-cloudarbitration/arquivos-claude",
+    "inputs": {
+      "faixa": "F3",
+      "tipo": "spend"
+    },
+    "_brt_time": "12:00 BRT"
+  },
+  "snapshot_foto_f3_revenue": {
+    "type": "daily",
+    "time": "16:30",
+    "timezone": "UTC",
+    "workflow": "snapshot-foto.yml",
+    "repo": "leo-cloudarbitration/arquivos-claude",
+    "inputs": {
+      "faixa": "F3",
+      "tipo": "revenue"
+    },
+    "_brt_time": "13:30 BRT"
+  },
+  "snapshot_foto_f4_spend": {
+    "type": "daily",
+    "time": "19:00",
+    "timezone": "UTC",
+    "workflow": "snapshot-foto.yml",
+    "repo": "leo-cloudarbitration/arquivos-claude",
+    "inputs": {
+      "faixa": "F4",
+      "tipo": "spend"
+    },
+    "_brt_time": "16:00 BRT"
+  },
+  "snapshot_foto_f4_revenue": {
+    "type": "daily",
+    "time": "20:30",
+    "timezone": "UTC",
+    "workflow": "snapshot-foto.yml",
+    "repo": "leo-cloudarbitration/arquivos-claude",
+    "inputs": {
+      "faixa": "F4",
+      "tipo": "revenue"
+    },
+    "_brt_time": "17:30 BRT"
+  },
+  "snapshot_foto_f5_spend": {
+    "type": "daily",
+    "time": "23:00",
+    "timezone": "UTC",
+    "workflow": "snapshot-foto.yml",
+    "repo": "leo-cloudarbitration/arquivos-claude",
+    "inputs": {
+      "faixa": "F5",
+      "tipo": "spend"
+    },
+    "_brt_time": "20:00 BRT"
+  },
+  "snapshot_foto_f5_revenue": {
+    "type": "daily",
+    "time": "00:30",
+    "timezone": "UTC",
+    "workflow": "snapshot-foto.yml",
+    "repo": "leo-cloudarbitration/arquivos-claude",
+    "inputs": {
+      "faixa": "F5",
+      "tipo": "revenue"
+    },
+    "_brt_time": "21:30 BRT"
+  },
+  "snapshot_foto_f6_both": {
+    "type": "daily",
+    "time": "06:00",
+    "timezone": "UTC",
+    "workflow": "snapshot-foto.yml",
+    "repo": "leo-cloudarbitration/arquivos-claude",
+    "inputs": {
+      "faixa": "F6",
+      "tipo": "both"
+    },
+    "_brt_time": "03:00 BRT (yesterday)"
   }
 }

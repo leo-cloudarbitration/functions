@@ -44,11 +44,17 @@ def should_run_daily(config, current_hour, current_minute):
     hour, minute = map(int, time_str.split(":"))
     return hour == current_hour and minute == current_minute
 
-def trigger_workflow(workflow):
+def trigger_workflow(workflow, repo=None, inputs=None):
     start_time = datetime.utcnow().isoformat() + "Z"
+    target_repo = repo or REPO
+
+    cmd = ["gh", "workflow", "run", workflow, "--repo", target_repo]
+    if inputs:
+        for key, value in inputs.items():
+            cmd.extend(["-f", f"{key}={value}"])
 
     result = subprocess.run(
-        ["gh", "workflow", "run", workflow, "--repo", REPO],
+        cmd,
         capture_output=True,
         text=True
     )
@@ -94,7 +100,11 @@ def main():
                 run = should_run_daily(settings, current_hour, current_minute)
 
             if run:
-                trigger_workflow(workflow)
+                trigger_workflow(
+                    settings.get("workflow", workflow),
+                    repo=settings.get("repo"),
+                    inputs=settings.get("inputs")
+                )
 
     finally:
         release_lock()
