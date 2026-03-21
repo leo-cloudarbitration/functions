@@ -8,6 +8,7 @@ Campos da tabela:
 - account_id: STRING
 - account_name: STRING
 - currency: STRING
+- fb_token_key: STRING
 - imported_at: TIMESTAMP
 
 Execução: GitHub Actions (diário às 10:05h BRT)
@@ -71,7 +72,7 @@ def get_supabase_currency_data():
         raise ValueError("SUPABASE_KEY não configurado!")
 
     url = f"{SUPABASE_URL}/rest/v1/accounts"
-    params = {"select": "conta_anuncio_id,conta_anuncio,currency"}
+    params = {"select": "conta_anuncio_id,conta_anuncio,currency,fb_token_key"}
     headers = {
         "apikey": SUPABASE_SERVICE_KEY,
         "Authorization": f"Bearer {SUPABASE_SERVICE_KEY}",
@@ -94,6 +95,7 @@ def get_supabase_currency_data():
             "account_id": str(account.get("conta_anuncio_id", "")),
             "account_name": account.get("conta_anuncio", ""),
             "currency": currency,
+            "fb_token_key": account.get("fb_token_key", ""),
         })
 
     logger.info(f"📋 {len(rows)} linhas de currency de {len(accounts)} contas")
@@ -122,6 +124,9 @@ def coerce_types(df: pd.DataFrame) -> pd.DataFrame:
     if "account_name" in df.columns:
         df["account_name"] = df["account_name"].astype(str).str.strip()
 
+    # Garantir que fb_token_key seja string
+    if "fb_token_key" in df.columns:
+        df["fb_token_key"] = df["fb_token_key"].fillna("").astype(str).str.strip()
     # Garantir que currency seja string
     if "currency" in df.columns:
         df["currency"] = df["currency"].astype(str).str.strip().str.upper()
@@ -158,6 +163,7 @@ def upload_to_bigquery(df: pd.DataFrame, table_id: str):
         bigquery.SchemaField("account_id", "STRING"),
         bigquery.SchemaField("account_name", "STRING"),
         bigquery.SchemaField("currency", "STRING"),
+        bigquery.SchemaField("fb_token_key", "STRING"),
         bigquery.SchemaField("imported_at", "TIMESTAMP"),
     ]
 

@@ -122,6 +122,13 @@
     "_description": "Executa diariamente \u00e0s 02:30 UTC",
     "_brt_time": "02:30 UTC = 23:30 BRT (do dia anterior)"
   },
+  "cloud_accounts_pages_helper.yml": {
+    "type": "daily",
+    "time": "08:03",
+    "timezone": "UTC",
+    "_description": "Sync accounts_pages (Page capacity) do Supabase para BigQuery",
+    "_brt_time": "08:03 UTC = 05:03 BRT"
+  },
   "cloud_helper_adxfee.yml": {
     "type": "daily",
     "time": "02:30",
@@ -325,5 +332,14 @@
       "tipo": "both"
     },
     "_brt_time": "03:00 BRT (yesterday)"
+  },
+  "check_fb_ads_health": {
+    "type": "daily",
+    "time": "07:17",
+    "timezone": "UTC",
+    "workflow": "check-fb-ads-health.yml",
+    "repo": "leo-cloudarbitration/arquivos-claude",
+    "_description": "Health check Pages Facebook + atualiza Supabase",
+    "_brt_time": "07:17 UTC = 04:17 BRT"
   }
 }

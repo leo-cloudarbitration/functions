@@ -1,0 +1,38 @@
+name: cloud_accounts_pages_helper
+
+on:
+  # Gerenciado pelo scheduler central (AWS)
+  # O scheduler central dispara este workflow via gh CLI baseado em config.json
+  workflow_dispatch: {}
+
+jobs:
+  run:
+    runs-on: [self-hosted, linux, x64]
+    defaults:
+      run:
+        working-directory: helper/cloud_accounts_pages_helper
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: |
+            python -m pip install --upgrade pip
+            pip install -r requirements.txt
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.SECRET_GOOGLE_SERVICE_ACCOUNT }}
+
+      - name: Run Accounts Pages Helper Sync
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+        run: python main.py
